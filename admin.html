@@ -240,12 +240,72 @@
     <div class="admin-panel" id="panel-community">
       <div class="admin-header-row">
         <div>
-          <h1 class="admin-page-title">커뮤니티(게시판) 글 관리</h1>
-          <p class="admin-page-sub">해외 독자들이 작성한 Q&A 및 토론 글을 검토하고 불필요한 글을 삭제 관리합니다.</p>
+          <h1 class="admin-page-title">커뮤니티(게시판) 관리 스튜디오</h1>
+          <p class="admin-page-sub">독자 토론, 루틴 Q&A, 공지사항을 관리하고 불량 게시글 숨김/삭제 및 댓글을 모니터링합니다.</p>
         </div>
-        <a href="/#community" target="_blank" class="btn-view-site">
-          <span>사용자 게시판 열기 ↗</span>
-        </a>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn-admin-primary" id="btn-admin-comm-new">
+            <span>📢</span>
+            <span>공지 / 새 글 등록</span>
+          </button>
+          <a href="/community.html" target="_blank" class="btn-view-site">
+            <span>사용자 게시판 열기 ↗</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- 커뮤니티 요약 지표 카드 -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 20px;">
+        <div style="background: #1E293B; border: 1px solid #334155; border-radius: var(--radius-md); padding: 14px 18px;">
+          <div style="font-size: 0.78rem; color: #94A3B8; font-weight: 600;">총 게시글</div>
+          <div style="font-size: 1.6rem; font-weight: 700; color: #FFFFFF; margin-top: 4px;" id="admin-comm-stat-total">0</div>
+        </div>
+        <div style="background: #1E293B; border: 1px solid #334155; border-radius: var(--radius-md); padding: 14px 18px;">
+          <div style="font-size: 0.78rem; color: #F472B6; font-weight: 600;">📌 상단 고정 공지</div>
+          <div style="font-size: 1.6rem; font-weight: 700; color: #F472B6; margin-top: 4px;" id="admin-comm-stat-pinned">0</div>
+        </div>
+        <div style="background: #1E293B; border: 1px solid #334155; border-radius: var(--radius-md); padding: 14px 18px;">
+          <div style="font-size: 0.78rem; color: #F87171; font-weight: 600;">🔒 숨김(블라인드)</div>
+          <div style="font-size: 1.6rem; font-weight: 700; color: #F87171; margin-top: 4px;" id="admin-comm-stat-hidden">0</div>
+        </div>
+        <div style="background: #1E293B; border: 1px solid #334155; border-radius: var(--radius-md); padding: 14px 18px;">
+          <div style="font-size: 0.78rem; color: #38BDF8; font-weight: 600;">💬 등록된 댓글</div>
+          <div style="font-size: 1.6rem; font-weight: 700; color: #38BDF8; margin-top: 4px;" id="admin-comm-stat-replies">0</div>
+        </div>
+        <div style="background: #1E293B; border: 1px solid #334155; border-radius: var(--radius-md); padding: 14px 18px;">
+          <div style="font-size: 0.78rem; color: #EC4899; font-weight: 600;">❤️ 누적 추천수</div>
+          <div style="font-size: 1.6rem; font-weight: 700; color: #EC4899; margin-top: 4px;" id="admin-comm-stat-likes">0</div>
+        </div>
+      </div>
+
+      <!-- 관리자 제어 툴바 (선택 삭제, 필터, 검색) -->
+      <div class="admin-comm-toolbar">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <button type="button" class="btn-action-icon" id="btn-admin-comm-bulk-delete" style="color: #F87171; font-size: 0.82rem;" title="선택한 게시글을 일괄 영구 삭제합니다">
+            🗑️ 선택 삭제 (<span id="admin-comm-selected-count">0</span>)
+          </button>
+        </div>
+
+        <div class="admin-comm-filters">
+          <select id="admin-comm-filter-status" class="admin-comm-select">
+            <option value="all">모든 상태</option>
+            <option value="published">🟢 공개중</option>
+            <option value="pinned">📌 상단 공지</option>
+            <option value="hidden">🔒 숨김/블라인드</option>
+          </select>
+
+          <select id="admin-comm-filter-cat" class="admin-comm-select">
+            <option value="all">모든 카테고리</option>
+            <option value="Notice">Notice (공지)</option>
+            <option value="Routine Advice">Routine Advice (루틴 상담)</option>
+            <option value="Holy Grail Reviews">Holy Grail Reviews (인생템 리뷰)</option>
+            <option value="Olive Young Haul">Olive Young Haul (올리브영 쇼핑)</option>
+            <option value="Ingredient Q&A">Ingredient Q&A (성분 Q&A)</option>
+            <option value="Free Chat">Free Chat (자유 수다)</option>
+          </select>
+
+          <input type="text" id="admin-comm-search-input" class="admin-comm-input" placeholder="제목 / 작성자 / 내용 검색..." style="width: 220px;" />
+        </div>
       </div>
 
       <div class="admin-card">
@@ -253,13 +313,17 @@
           <table class="admin-table">
             <thead>
               <tr>
-                <th>작성자 / 국가</th>
-                <th>카테고리</th>
+                <th style="width: 40px; text-align: center;">
+                  <input type="checkbox" id="admin-comm-check-all" title="전체 선택" />
+                </th>
+                <th style="width: 90px;">상태</th>
+                <th style="width: 60px;">No.</th>
+                <th style="width: 140px;">카테고리</th>
                 <th>제목 및 내용 요약</th>
-                <th>좋아요</th>
-                <th>댓글 수</th>
-                <th>작성일</th>
-                <th style="text-align: right;">관리</th>
+                <th style="width: 130px;">작성자/국가</th>
+                <th style="width: 120px;">지표 (조회/추천/댓글)</th>
+                <th style="width: 100px;">작성일</th>
+                <th style="text-align: right; width: 180px;">관리 액션</th>
               </tr>
             </thead>
             <tbody id="community-table-body">
@@ -600,6 +664,103 @@
         <button type="button" class="btn-action-icon" id="btn-test-gemini-key">🧪 Gemini 키 테스트</button>
         <button type="button" class="btn-action-icon" id="btn-cancel-gemini-modal">취소</button>
         <button type="button" class="btn-admin-primary" id="btn-save-gemini-key">💾 설정 저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 관리자 커뮤니티 글 작성/수정 모달 -->
+  <div class="admin-modal-backdrop" id="modal-admin-comm-editor">
+    <div class="admin-modal-card" style="max-width: 680px;">
+      <div class="admin-modal-header">
+        <h3 style="font-size: 1.15rem; font-weight: 700; color: #FFFFFF;" id="admin-comm-modal-title">관리자 공지 / 게시글 작성</h3>
+        <button type="button" id="btn-close-admin-comm-editor" class="btn-action-icon" style="font-size: 1.2rem;">&times;</button>
+      </div>
+      <form id="form-admin-comm-editor" style="display: flex; flex-direction: column; overflow: hidden; height: 100%;">
+        <div class="admin-modal-body">
+          <input type="hidden" id="admin-comm-edit-id" value="" />
+          
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 14px;">
+            <div class="admin-form-group">
+              <label class="admin-label">카테고리</label>
+              <select id="admin-comm-input-category" class="admin-input" required>
+                <option value="Notice">Notice (공지사항)</option>
+                <option value="Routine Advice">Routine Advice (루틴 상담)</option>
+                <option value="Holy Grail Reviews">Holy Grail Reviews (인생템 리뷰)</option>
+                <option value="Olive Young Haul">Olive Young Haul (올리브영 쇼핑)</option>
+                <option value="Ingredient Q&A">Ingredient Q&A (성분 Q&A)</option>
+                <option value="Free Chat">Free Chat (자유 수다)</option>
+              </select>
+            </div>
+            <div class="admin-form-group" style="display: flex; flex-direction: column; justify-content: flex-end;">
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #F472B6; font-weight: 600; cursor: pointer; padding-bottom: 8px;">
+                <input type="checkbox" id="admin-comm-input-pinned" style="accent-color: #EC4899; width: 16px; height: 16px;" />
+                <span>📌 상단 공지 고정</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="admin-form-group" style="margin-bottom: 14px;">
+            <label class="admin-label">게시글 제목</label>
+            <input type="text" id="admin-comm-input-title" class="admin-input" placeholder="게시글 제목을 입력하세요" required />
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+            <div class="admin-form-group">
+              <label class="admin-label">작성자 닉네임</label>
+              <input type="text" id="admin-comm-input-author" class="admin-input" value="K-Beauty Glow Admin" required />
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-label">국가 / 소속 표기</label>
+              <input type="text" id="admin-comm-input-country" class="admin-input" value="🇰🇷 Seoul (Admin)" required />
+            </div>
+          </div>
+
+          <div class="admin-form-group" style="margin-bottom: 14px;">
+            <label class="admin-label">해시태그 (쉼표 구분)</label>
+            <input type="text" id="admin-comm-input-tags" class="admin-input" placeholder="예: Notice, CommunityRules, CleanBeauty" />
+          </div>
+
+          <div class="admin-form-group" style="margin-bottom: 14px;">
+            <label class="admin-label">게시글 본문 내용</label>
+            <textarea id="admin-comm-input-content" class="admin-textarea" rows="6" placeholder="게시글 또는 공지사항 상세 내용을 입력하세요..." required style="min-height: 140px;"></textarea>
+          </div>
+        </div>
+        <div class="admin-modal-footer">
+          <button type="button" class="btn-action-icon" id="btn-cancel-admin-comm-editor">취소</button>
+          <button type="submit" class="btn-admin-primary" id="btn-save-admin-comm-editor">💾 저장 및 발행</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 관리자 댓글 모니터링 및 삭제 모달 -->
+  <div class="admin-modal-backdrop" id="modal-admin-comm-comments">
+    <div class="admin-modal-card" style="max-width: 650px;">
+      <div class="admin-modal-header">
+        <div>
+          <h3 style="font-size: 1.15rem; font-weight: 700; color: #FFFFFF;">댓글 모니터링 & 삭제</h3>
+          <div id="admin-comm-comments-target-title" style="font-size: 0.82rem; color: #38BDF8; margin-top: 2px;"></div>
+        </div>
+        <button type="button" id="btn-close-admin-comm-comments" class="btn-action-icon" style="font-size: 1.2rem;">&times;</button>
+      </div>
+      <div class="admin-modal-body" style="padding: 20px;">
+        <input type="hidden" id="admin-comm-comments-post-id" value="" />
+        
+        <div class="admin-comm-comments-list" id="admin-comm-comments-container">
+          <!-- 댓글 목록 동적 렌더링 -->
+        </div>
+
+        <!-- 관리자 즉시 답글 작성 -->
+        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #334155;">
+          <label class="admin-label" style="margin-bottom: 8px;">👑 관리자 공식 댓글 달기</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="admin-comm-admin-reply-input" class="admin-input" placeholder="관리자 공식 답변을 입력하세요..." style="flex: 1;" />
+            <button type="button" class="btn-admin-primary" id="btn-admin-send-reply" style="white-space: nowrap; padding: 6px 16px;">답글 등록</button>
+          </div>
+        </div>
+      </div>
+      <div class="admin-modal-footer">
+        <button type="button" class="btn-action-icon" id="btn-close-admin-comments-footer">닫기</button>
       </div>
     </div>
   </div>

@@ -790,88 +790,520 @@ export function deleteTag(tag) {
 // Community Forum Management
 export const INITIAL_COMMUNITY_POSTS = [
   {
+    id: "post-notice-1",
+    postNo: 101,
+    title: "📢 [NOTICE] K-Beauty Glow Community Guidelines & Clean Discussion Policy",
+    author: "K-Beauty Glow Editorial",
+    country: "🇰🇷 Seoul (Admin)",
+    category: "Notice",
+    date: "1 day ago",
+    createdAt: "2026-10-21T08:00:00Z",
+    views: 1840,
+    likes: 128,
+    isPinned: true,
+    isNotice: true,
+    status: "published",
+    password: "admin",
+    tags: ["#CommunityRules", "#CleanBeauty", "#Notice"],
+    content: "Welcome to K-beuty Glow Edit Global Community!\n\n1. Be respectful to fellow skincare enthusiasts worldwide.\n2. When asking routine advice, please share your skin type, climate, and current products.\n3. Honest holy grail reviews and Olive Young hauls are always celebrated!\n4. No hate speech, spam affiliate links, or harassment. Let's keep this space radiant and helpful.",
+    replies: [
+      {
+        id: "reply-n1",
+        author: "Sarah J.",
+        country: "🇺🇸 USA",
+        date: "20 hours ago",
+        createdAt: "2026-10-21T12:00:00Z",
+        content: "Love this community! So happy to have a dedicated space for real K-beauty talk without marketing fluff.",
+        likes: 14,
+        password: "user123"
+      },
+      {
+        id: "reply-n2",
+        author: "Yuki Tanaka",
+        country: "🇯🇵 Japan",
+        date: "18 hours ago",
+        createdAt: "2026-10-21T14:30:00Z",
+        content: "韓国現地の最新オリーブヤング情報がとても参考になります。いつもありがとうございます！",
+        likes: 9,
+        password: "user123"
+      }
+    ]
+  },
+  {
+    id: "post-notice-2",
+    postNo: 102,
+    title: "💡 [TIPS] Olive Young Global Shipping, Customs & Promo Code Guide (Updated 2026)",
+    author: "Min-Ji (Seoul Editor)",
+    country: "🇰🇷 Seoul (Admin)",
+    category: "Olive Young Haul",
+    date: "2 days ago",
+    createdAt: "2026-10-20T10:00:00Z",
+    views: 3410,
+    likes: 215,
+    isPinned: true,
+    isNotice: false,
+    status: "published",
+    password: "admin",
+    tags: ["#OliveYoungGlobal", "#PromoCode", "#ShippingTips"],
+    content: "Essential tips when ordering directly from Olive Young Global:\n\n• Free shipping threshold: $60+ USD globally via DHL Express.\n• UK / EU Customs: Keep cart under £135 / €150 to avoid extra import procedures at your doorstep.\n• Promo code GLOW10 gives an extra 10% off storewide during seasonal big sale weeks!\n• Delivery usually takes 3 to 5 business days from Incheon Airport.",
+    replies: [
+      {
+        id: "reply-n3",
+        author: "Charlotte Davies",
+        country: "🇬🇧 UK",
+        date: "1 day ago",
+        createdAt: "2026-10-21T09:15:00Z",
+        content: "Can confirm DHL to London took literally 4 days! Such a lifesaver.",
+        likes: 18,
+        password: "user123"
+      }
+    ]
+  },
+  {
     id: "post-1",
+    postNo: 103,
     title: "Anyone tried layering COSRX Snail Mucin with Torriden Hyaluronic Acid?",
     author: "Elena Vance",
     country: "🇺🇸 USA",
     category: "Routine Advice",
     date: "2 hours ago",
-    likes: 24,
-    content: "I have dehydrated skin and love both of these products. Should I apply Torriden first or COSRX? Any tips on absorption time?",
+    createdAt: "2026-10-22T15:30:00Z",
+    views: 620,
+    likes: 34,
+    isPinned: false,
+    isNotice: false,
+    status: "published",
+    password: "1234",
+    tags: ["#SnailMucin", "#HyaluronicAcid", "#GlassSkin"],
+    content: "I have dehydrated combination skin and love both of these products. Should I apply Torriden first or COSRX? Any tips on absorption time between layers?",
     replies: [
-      { author: "Kenji Sato", country: "🇯🇵 Japan", date: "1 hour ago", content: "Yes! Apply Torriden first on slightly damp skin because of its thinner molecular weight, then pat COSRX. It locks in moisture amazingly." },
-      { author: "Min-Ji (Editor)", country: "🇰🇷 Seoul", date: "45 mins ago", content: "Great question! That's actually the classic Seoul 2-step hydration sandwich." }
+      {
+        id: "reply-1-1",
+        author: "Kenji Sato",
+        country: "🇯🇵 Japan",
+        date: "1 hour ago",
+        createdAt: "2026-10-22T16:20:00Z",
+        content: "Yes! Apply Torriden DIVE-IN first on slightly damp skin because of its ultra-low molecular weight, then pat COSRX snail essence on top. It locks in moisture amazingly without sticky residue.",
+        likes: 12,
+        password: "1234"
+      },
+      {
+        id: "reply-1-2",
+        author: "Min-Ji (Editor)",
+        country: "🇰🇷 Seoul",
+        date: "45 mins ago",
+        createdAt: "2026-10-22T16:45:00Z",
+        content: "Great question! That's actually the classic Seoul 2-step hydration sandwich. Just wait about 30-40 seconds for the hyaluronic acid to sink in before applying the snail mucin.",
+        likes: 8,
+        password: "admin"
+      }
     ]
   },
   {
     id: "post-2",
+    postNo: 104,
     title: "Round Lab Birch Juice vs BOJ Rice Sunscreen under matte cushion?",
     author: "Sophie Chen",
     country: "🇨🇦 Canada",
     category: "Holy Grail Reviews",
     date: "5 hours ago",
-    likes: 38,
-    content: "Need advice for my everyday makeup base. I use the Clio Kill Cover cushion and want zero pilling around the nose area.",
+    createdAt: "2026-10-22T12:00:00Z",
+    views: 940,
+    likes: 56,
+    isPinned: false,
+    isNotice: false,
+    status: "published",
+    password: "1234",
+    tags: ["#Sunscreen", "#RoundLab", "#BeautyOfJoseon", "#MakeupBase"],
+    content: "Need advice for my everyday makeup base. I use the Clio Kill Cover cushion and want zero pilling around the nose and jawline area.\n\nWhich one sits better under semi-matte cushion foundation?",
     replies: [
-      { author: "Chloe D.", country: "🇫🇷 France", date: "3 hours ago", content: "Round Lab works much better under matte cushion because of its lightweight fluid texture with zero pilling." }
+      {
+        id: "reply-2-1",
+        author: "Chloe D.",
+        country: "🇫🇷 France",
+        date: "3 hours ago",
+        createdAt: "2026-10-22T14:10:00Z",
+        content: "Round Lab works much better under matte cushion because of its lightweight essence texture. BOJ is a touch more nourishing/dewy which can make matte foundation slip if you have oily T-zone.",
+        likes: 16,
+        password: "1234"
+      }
     ]
   },
   {
     id: "post-3",
-    title: "Olive Young Global shipping time to UK & customs tips?",
-    author: "Charlotte Davies",
-    country: "🇬🇧 UK",
-    category: "Olive Young Haul",
-    date: "1 day ago",
-    likes: 19,
-    content: "Planning to use the GLOW10 discount code for an 80 USD order. How fast does DHL usually deliver to London?",
+    postNo: 105,
+    title: "Anua Heartleaf 77% vs Centella (Cica) Toner for calming hormonal breakouts?",
+    author: "Jessica Wong",
+    country: "🇦🇺 Australia",
+    category: "Ingredient Q&A",
+    date: "8 hours ago",
+    createdAt: "2026-10-22T09:30:00Z",
+    views: 780,
+    likes: 41,
+    isPinned: false,
+    isNotice: false,
+    status: "published",
+    password: "1234",
+    tags: ["#Heartleaf", "#Centella", "#AcneCare", "#Calming"],
+    content: "I get inflamed red bumps along my jawline every month. Should I go with Anua 77% Heartleaf or Skin1004 Centella Ampoule? Which one works faster for active flare-ups?",
     replies: [
-      { author: "Admin", country: "🇰🇷 Seoul", date: "1 day ago", content: "Usually 4-5 business days via DHL Express! Keep orders under £135 to avoid additional import VAT surprise." }
+      {
+        id: "reply-3-1",
+        author: "Hana K.",
+        country: "🇰🇷 Seoul",
+        date: "6 hours ago",
+        createdAt: "2026-10-22T11:00:00Z",
+        content: "Anua Heartleaf is superior for active heat and redness relief (try doing a 5-minute toner pad mask!). Centella is great for rebuilding barrier after the bump dries down.",
+        likes: 22,
+        password: "1234"
+      }
+    ]
+  },
+  {
+    id: "post-4",
+    postNo: 106,
+    title: "What is your current holy grail night cream for winter barrier repair?",
+    author: "Marcus Lindqvist",
+    country: "🇸🇪 Sweden",
+    category: "Free Chat",
+    date: "1 day ago",
+    createdAt: "2026-10-21T18:00:00Z",
+    views: 1120,
+    likes: 63,
+    isPinned: false,
+    isNotice: false,
+    status: "published",
+    password: "1234",
+    tags: ["#BarrierRepair", "#Ceramide", "#WinterSkincare"],
+    content: "Nordic winter is brutal on my skin barrier with indoor heating. Looking for heavy ceramides that won't clog pores. Currently eyeing Aestura Atobarrier 365 Cream vs Illiyoon Ceramide Ato Concentrate. Drop your recommendations!",
+    replies: [
+      {
+        id: "reply-4-1",
+        author: "Emily Watson",
+        country: "🇩🇪 Germany",
+        date: "22 hours ago",
+        createdAt: "2026-10-21T19:30:00Z",
+        content: "Aestura Atobarrier 365 is 100% worth every penny. The micro-capsules melt right into the skin and fix irritation overnight.",
+        likes: 19,
+        password: "1234"
+      }
     ]
   }
 ];
 
-export function getCommunityPosts() {
-  const saved = localStorage.getItem('kbeauty_community_posts');
-  if (saved) {
-    try { return JSON.parse(saved); } catch (e) {}
-  }
-  localStorage.setItem('kbeauty_community_posts', JSON.stringify(INITIAL_COMMUNITY_POSTS));
-  return INITIAL_COMMUNITY_POSTS;
+function normalizePost(p, index) {
+  return {
+    id: p.id || `post-${Date.now()}-${index}`,
+    postNo: p.postNo || (100 + index + 1),
+    title: p.title || "Untitled Discussion",
+    content: p.content || "",
+    category: p.category || "Routine Advice",
+    author: p.author || "Anonymous",
+    country: p.country || "🌍 Global",
+    password: p.password || "1234",
+    date: p.date || "Recently",
+    createdAt: p.createdAt || new Date().toISOString(),
+    views: typeof p.views === 'number' ? p.views : Math.floor(Math.random() * 200) + 40,
+    likes: typeof p.likes === 'number' ? p.likes : 0,
+    isPinned: !!p.isPinned,
+    isNotice: p.category === 'Notice' || !!p.isNotice,
+    status: p.status || "published",
+    tags: Array.isArray(p.tags) ? p.tags : [],
+    replies: Array.isArray(p.replies) ? p.replies.map((r, rIdx) => ({
+      id: r.id || `reply-${Date.now()}-${rIdx}`,
+      author: r.author || "Reader",
+      country: r.country || "🌍 Global",
+      date: r.date || "Recently",
+      createdAt: r.createdAt || new Date().toISOString(),
+      content: r.content || "",
+      password: r.password || "1234",
+      likes: typeof r.likes === 'number' ? r.likes : 0
+    })) : []
+  };
 }
 
-export function saveCommunityPost(post) {
-  const posts = getCommunityPosts();
-  posts.unshift(post);
-  localStorage.setItem('kbeauty_community_posts', JSON.stringify(posts));
+export function getCommunityPosts(options = {}) {
+  const { includeHidden = false, category = 'all', searchQuery = '', sortBy = 'latest' } = options;
+  const saved = localStorage.getItem('kbeauty_community_posts_v3');
+  let posts = [];
+
+  if (saved) {
+    try {
+      posts = JSON.parse(saved);
+    } catch (e) {
+      posts = INITIAL_COMMUNITY_POSTS;
+    }
+  } else {
+    // Check old key migration if exists
+    const legacy = localStorage.getItem('kbeauty_community_posts');
+    if (legacy) {
+      try {
+        const parsed = JSON.parse(legacy);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          posts = parsed.map(normalizePost);
+          // If legacy doesn't have notices, prepend our rich seed notices
+          if (!posts.some(p => p.isPinned)) {
+            posts = [...INITIAL_COMMUNITY_POSTS.filter(p => p.isPinned), ...posts];
+          }
+        } else {
+          posts = INITIAL_COMMUNITY_POSTS;
+        }
+      } catch (e) {
+        posts = INITIAL_COMMUNITY_POSTS;
+      }
+    } else {
+      posts = INITIAL_COMMUNITY_POSTS;
+    }
+    localStorage.setItem('kbeauty_community_posts_v3', JSON.stringify(posts));
+  }
+
+  // Ensure all posts are properly normalized
+  posts = posts.map(normalizePost);
+
+  // Filter hidden unless admin requests includeHidden
+  if (!includeHidden) {
+    posts = posts.filter(p => p.status !== 'hidden');
+  }
+
+  // Filter category
+  if (category && category !== 'all') {
+    if (category === 'pinned' || category === 'Notice') {
+      posts = posts.filter(p => p.isPinned || p.category === 'Notice');
+    } else {
+      posts = posts.filter(p => p.category === category);
+    }
+  }
+
+  // Filter search query
+  if (searchQuery && searchQuery.trim()) {
+    const q = searchQuery.trim().toLowerCase();
+    posts = posts.filter(p => 
+      p.title.toLowerCase().includes(q) ||
+      p.content.toLowerCase().includes(q) ||
+      p.author.toLowerCase().includes(q) ||
+      (p.tags && p.tags.some(t => t.toLowerCase().includes(q)))
+    );
+  }
+
+  // Sort
+  if (sortBy === 'likes') {
+    posts.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+  } else if (sortBy === 'comments') {
+    posts.sort((a, b) => ((b.replies || []).length) - ((a.replies || []).length));
+  } else if (sortBy === 'views') {
+    posts.sort((a, b) => (b.views || 0) - (a.views || 0));
+  } else {
+    // Latest: sort by createdAt descending, but keep pinned posts at the very top for default listing
+    posts.sort((a, b) => {
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+      const dateA = new Date(a.createdAt || 0).getTime();
+      const dateB = new Date(b.createdAt || 0).getTime();
+      return dateB - dateA;
+    });
+  }
+
   return posts;
+}
+
+export function getAllCommunityPostsRaw() {
+  const saved = localStorage.getItem('kbeauty_community_posts_v3');
+  if (saved) {
+    try {
+      return JSON.parse(saved).map(normalizePost);
+    } catch (e) {}
+  }
+  return INITIAL_COMMUNITY_POSTS.map(normalizePost);
+}
+
+function persistCommunityPosts(posts) {
+  localStorage.setItem('kbeauty_community_posts_v3', JSON.stringify(posts));
+  localStorage.setItem('kbeauty_community_posts', JSON.stringify(posts)); // backwards compatibility
+  return posts;
+}
+
+export function saveCommunityPost(postData) {
+  const posts = getAllCommunityPostsRaw();
+  const maxPostNo = posts.reduce((max, p) => Math.max(max, p.postNo || 0), 100);
+
+  const newPost = normalizePost({
+    ...postData,
+    id: postData.id || `post-${Date.now()}`,
+    postNo: maxPostNo + 1,
+    createdAt: new Date().toISOString(),
+    date: 'Just now',
+    views: 0,
+    likes: 1,
+    status: postData.status || 'published',
+    replies: []
+  }, 0);
+
+  // If pinned, insert at top, else insert after pinned posts
+  if (newPost.isPinned) {
+    posts.unshift(newPost);
+  } else {
+    const firstNonPinnedIndex = posts.findIndex(p => !p.isPinned);
+    if (firstNonPinnedIndex >= 0) {
+      posts.splice(firstNonPinnedIndex, 0, newPost);
+    } else {
+      posts.push(newPost);
+    }
+  }
+
+  persistCommunityPosts(posts);
+  return posts;
+}
+
+export function updateCommunityPost(id, updatedFields) {
+  const posts = getAllCommunityPostsRaw();
+  const idx = posts.findIndex(p => p.id === id);
+  if (idx >= 0) {
+    posts[idx] = {
+      ...posts[idx],
+      ...updatedFields
+    };
+    persistCommunityPosts(posts);
+    return posts[idx];
+  }
+  return null;
 }
 
 export function deleteCommunityPost(id) {
-  let posts = getCommunityPosts().filter(p => p.id !== id);
-  localStorage.setItem('kbeauty_community_posts', JSON.stringify(posts));
+  let posts = getAllCommunityPostsRaw().filter(p => p.id !== id);
+  persistCommunityPosts(posts);
   return posts;
 }
 
-export function addCommunityComment(postId, comment) {
-  const posts = getCommunityPosts();
-  const post = posts.find(p => p.id === postId);
-  if (post) {
-    post.replies = post.replies || [];
-    post.replies.push(comment);
-    localStorage.setItem('kbeauty_community_posts', JSON.stringify(posts));
-  }
+export function batchDeleteCommunityPosts(ids) {
+  const idSet = new Set(ids);
+  let posts = getAllCommunityPostsRaw().filter(p => !idSet.has(p.id));
+  persistCommunityPosts(posts);
   return posts;
+}
+
+export function togglePinCommunityPost(id) {
+  const posts = getAllCommunityPostsRaw();
+  const post = posts.find(p => p.id === id);
+  if (post) {
+    post.isPinned = !post.isPinned;
+    persistCommunityPosts(posts);
+    return post.isPinned;
+  }
+  return false;
+}
+
+export function toggleHideCommunityPost(id) {
+  const posts = getAllCommunityPostsRaw();
+  const post = posts.find(p => p.id === id);
+  if (post) {
+    post.status = post.status === 'hidden' ? 'published' : 'hidden';
+    persistCommunityPosts(posts);
+    return post.status;
+  }
+  return 'published';
+}
+
+export function incrementPostViews(id) {
+  const sessionKey = `viewed_post_${id}`;
+  if (sessionStorage.getItem(sessionKey)) {
+    return; // Already viewed in this session
+  }
+  sessionStorage.setItem(sessionKey, '1');
+
+  const posts = getAllCommunityPostsRaw();
+  const post = posts.find(p => p.id === id);
+  if (post) {
+    post.views = (post.views || 0) + 1;
+    persistCommunityPosts(posts);
+  }
 }
 
 export function likeCommunityPost(postId) {
-  const posts = getCommunityPosts();
+  const likedKey = `comm_liked_${postId}`;
+  const alreadyLiked = localStorage.getItem(likedKey) === 'true';
+
+  const posts = getAllCommunityPostsRaw();
+  const post = posts.find(p => p.id === postId);
+  if (!post) return { likes: 0, isLiked: false };
+
+  if (alreadyLiked) {
+    post.likes = Math.max(0, (post.likes || 1) - 1);
+    localStorage.removeItem(likedKey);
+  } else {
+    post.likes = (post.likes || 0) + 1;
+    localStorage.setItem(likedKey, 'true');
+  }
+
+  persistCommunityPosts(posts);
+  return { likes: post.likes, isLiked: !alreadyLiked };
+}
+
+export function isPostLikedByMe(postId) {
+  return localStorage.getItem(`comm_liked_${postId}`) === 'true';
+}
+
+export function addCommunityComment(postId, commentData) {
+  const posts = getAllCommunityPostsRaw();
   const post = posts.find(p => p.id === postId);
   if (post) {
-    post.likes = (post.likes || 0) + 1;
-    localStorage.setItem('kbeauty_community_posts', JSON.stringify(posts));
+    post.replies = post.replies || [];
+    const newReply = {
+      id: `reply-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      author: commentData.author || "Skincare Lover",
+      country: commentData.country || "🌍 Global",
+      content: commentData.content || "",
+      password: commentData.password || "1234",
+      createdAt: new Date().toISOString(),
+      date: "Just now",
+      likes: 0
+    };
+    post.replies.push(newReply);
+    persistCommunityPosts(posts);
+    return newReply;
   }
-  return posts;
+  return null;
+}
+
+export function deleteCommunityComment(postId, commentId, password = '', isAdmin = false) {
+  const posts = getAllCommunityPostsRaw();
+  const post = posts.find(p => p.id === postId);
+  if (post && post.replies) {
+    const commentIndex = post.replies.findIndex(r => r.id === commentId);
+    if (commentIndex >= 0) {
+      const comment = post.replies[commentIndex];
+      if (isAdmin || !comment.password || comment.password === password) {
+        post.replies.splice(commentIndex, 1);
+        persistCommunityPosts(posts);
+        return { success: true };
+      } else {
+        return { success: false, message: "비밀번호가 일치하지 않습니다." };
+      }
+    }
+  }
+  return { success: false, message: "댓글을 찾을 수 없습니다." };
+}
+
+export function likeCommunityComment(postId, commentId) {
+  const likedKey = `comm_comment_liked_${commentId}`;
+  const alreadyLiked = localStorage.getItem(likedKey) === 'true';
+
+  const posts = getAllCommunityPostsRaw();
+  const post = posts.find(p => p.id === postId);
+  if (post && post.replies) {
+    const comment = post.replies.find(r => r.id === commentId);
+    if (comment) {
+      if (alreadyLiked) {
+        comment.likes = Math.max(0, (comment.likes || 1) - 1);
+        localStorage.removeItem(likedKey);
+      } else {
+        comment.likes = (comment.likes || 0) + 1;
+        localStorage.setItem(likedKey, 'true');
+      }
+      persistCommunityPosts(posts);
+      return { likes: comment.likes, isLiked: !alreadyLiked };
+    }
+  }
+  return { likes: 0, isLiked: false };
 }
 
 // Reset data helper
@@ -881,6 +1313,7 @@ export function resetDemoData() {
   localStorage.setItem('kbeauty_categories', JSON.stringify(INITIAL_CATEGORIES));
   localStorage.setItem('kbeauty_tags', JSON.stringify(INITIAL_TAGS));
   localStorage.setItem('kbeauty_community_posts', JSON.stringify(INITIAL_COMMUNITY_POSTS));
+  localStorage.setItem('kbeauty_community_posts_v3', JSON.stringify(INITIAL_COMMUNITY_POSTS));
   localStorage.removeItem('kbeauty_affiliate_click_log');
 }
 

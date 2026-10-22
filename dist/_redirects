@@ -2,4 +2,5 @@
 # Multi-page static routing with fallbacks
 
 /article /article.html 200
+/community /community.html 200
 /admin /admin.html 200

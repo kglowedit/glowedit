@@ -20,7 +20,15 @@ import {
   saveTag, 
   deleteTag, 
   getCommunityPosts, 
+  getAllCommunityPostsRaw,
+  saveCommunityPost,
+  updateCommunityPost,
   deleteCommunityPost, 
+  batchDeleteCommunityPosts,
+  togglePinCommunityPost,
+  toggleHideCommunityPost,
+  addCommunityComment,
+  deleteCommunityComment,
   resetDemoData 
 } from './data.js';
 import { 
@@ -58,6 +66,7 @@ export function initAdminApp() {
   renderCategoriesTable();
   renderTagsChips();
   renderCommunityTable();
+  setupCommunityAdmin();
   setupArticleEditor();
   setupCategoryForm();
   setupTagForm();
@@ -1194,63 +1203,473 @@ function setupTagForm() {
 /* =========================================================
    4. 커뮤니티(게시판) 관리 (Community Moderation)
 ========================================================= */
+let adminCommFilterStatus = 'all';
+let adminCommFilterCat = 'all';
+let adminCommSearchQuery = '';
+let adminCommSelectedIds = new Set();
+
+function setupCommunityAdmin() {
+  const btnNew = document.getElementById('btn-admin-comm-new');
+  const btnBulkDelete = document.getElementById('btn-admin-comm-bulk-delete');
+  const statusFilter = document.getElementById('admin-comm-filter-status');
+  const catFilter = document.getElementById('admin-comm-filter-cat');
+  const searchInput = document.getElementById('admin-comm-search-input');
+  const checkAll = document.getElementById('admin-comm-check-all');
+
+  // Editor Modal elements
+  const editorModal = document.getElementById('modal-admin-comm-editor');
+  const btnCloseEditor = document.getElementById('btn-close-admin-comm-editor');
+  const btnCancelEditor = document.getElementById('btn-cancel-admin-comm-editor');
+  const editorForm = document.getElementById('form-admin-comm-editor');
+  const editorTitle = document.getElementById('admin-comm-modal-title');
+  const editIdInput = document.getElementById('admin-comm-edit-id');
+
+  // Comment Modal elements
+  const commentsModal = document.getElementById('modal-admin-comm-comments');
+  const btnCloseComments = document.getElementById('btn-close-admin-comm-comments');
+  const btnCloseCommentsFooter = document.getElementById('btn-close-admin-comments-footer');
+  const btnSendReply = document.getElementById('btn-admin-send-reply');
+  const adminReplyInput = document.getElementById('admin-comm-admin-reply-input');
+
+  // Open New Post / Notice Modal
+  btnNew?.addEventListener('click', () => {
+    if (editIdInput) editIdInput.value = '';
+    editorForm?.reset();
+    if (editorTitle) editorTitle.textContent = "관리자 공지 / 게시글 작성";
+    document.getElementById('admin-comm-input-category').value = 'Notice';
+    document.getElementById('admin-comm-input-pinned').checked = true;
+    document.getElementById('admin-comm-input-author').value = 'K-Beauty Glow Admin';
+    document.getElementById('admin-comm-input-country').value = '🇰🇷 Seoul (Admin)';
+    editorModal?.classList.add('open');
+  });
+
+  // Close Editor Modal
+  const closeEditor = () => editorModal?.classList.remove('open');
+  btnCloseEditor?.addEventListener('click', closeEditor);
+  btnCancelEditor?.addEventListener('click', closeEditor);
+
+  // Editor Form Submit (Create or Update)
+  editorForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const editId = editIdInput ? editIdInput.value.trim() : '';
+    const title = document.getElementById('admin-comm-input-title').value.trim();
+    const category = document.getElementById('admin-comm-input-category').value;
+    const isPinned = document.getElementById('admin-comm-input-pinned').checked;
+    const author = document.getElementById('admin-comm-input-author').value.trim();
+    const country = document.getElementById('admin-comm-input-country').value.trim();
+    const tagsRaw = document.getElementById('admin-comm-input-tags').value.trim();
+    const content = document.getElementById('admin-comm-input-content').value.trim();
+
+    if (!title || !content || !author) return;
+
+    const tags = tagsRaw
+      ? tagsRaw.split(/[,#\s]+/).filter(Boolean).map(t => t.startsWith('#') ? t : `#${t}`)
+      : [];
+
+    if (editId) {
+      updateCommunityPost(editId, {
+        title,
+        category,
+        isPinned,
+        author,
+        country,
+        tags,
+        content
+      });
+      showToast({ title: "게시글 수정 완료", message: "커뮤니티 글이 수정되었습니다." });
+    } else {
+      saveCommunityPost({
+        title,
+        category,
+        isPinned,
+        isNotice: category === 'Notice' || isPinned,
+        author,
+        country,
+        tags,
+        content,
+        password: 'admin',
+        status: 'published'
+      });
+      showToast({ title: "게시글 발행 완료", message: "관리자 게시글(공지)이 등록되었습니다." });
+    }
+
+    closeEditor();
+    updateTopCounters();
+    renderCommunityTable();
+  });
+
+  // Filters & Search
+  statusFilter?.addEventListener('change', (e) => {
+    adminCommFilterStatus = e.target.value;
+    renderCommunityTable();
+  });
+
+  catFilter?.addEventListener('change', (e) => {
+    adminCommFilterCat = e.target.value;
+    renderCommunityTable();
+  });
+
+  if (searchInput) {
+    let debounce;
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(debounce);
+      debounce = setTimeout(() => {
+        adminCommSearchQuery = e.target.value.trim();
+        renderCommunityTable();
+      }, 200);
+    });
+  }
+
+  // Check all toggle
+  checkAll?.addEventListener('change', (e) => {
+    const isChecked = e.target.checked;
+    const checkboxes = document.querySelectorAll('.admin-comm-checkbox');
+    checkboxes.forEach(cb => {
+      cb.checked = isChecked;
+      if (isChecked) adminCommSelectedIds.add(cb.dataset.id);
+      else adminCommSelectedIds.delete(cb.dataset.id);
+    });
+    updateSelectedCount();
+  });
+
+  // Bulk Delete
+  btnBulkDelete?.addEventListener('click', () => {
+    if (adminCommSelectedIds.size === 0) {
+      alert('삭제할 게시글을 먼저 선택해주세요.');
+      return;
+    }
+
+    if (confirm(`선택한 ${adminCommSelectedIds.size}개의 게시글을 영구 삭제하시겠습니까?`)) {
+      batchDeleteCommunityPosts(Array.from(adminCommSelectedIds));
+      adminCommSelectedIds.clear();
+      updateSelectedCount();
+      updateTopCounters();
+      renderCommunityTable();
+      showToast({ title: "일괄 삭제 완료", message: "선택한 게시글이 삭제되었습니다." });
+    }
+  });
+
+  // Comments Modal Close
+  const closeCommentsModal = () => commentsModal?.classList.remove('open');
+  btnCloseComments?.addEventListener('click', closeCommentsModal);
+  btnCloseCommentsFooter?.addEventListener('click', closeCommentsModal);
+
+  // Admin Reply Send inside comments modal
+  btnSendReply?.addEventListener('click', () => {
+    const postId = document.getElementById('admin-comm-comments-post-id')?.value;
+    const text = adminReplyInput ? adminReplyInput.value.trim() : '';
+    if (!postId || !text) return;
+
+    addCommunityComment(postId, {
+      author: "K-Beauty Glow Editorial (Admin)",
+      country: "🇰🇷 Seoul (Admin)",
+      password: "admin",
+      content: text
+    });
+
+    if (adminReplyInput) adminReplyInput.value = '';
+    showToast({ title: "답글 등록 완료", message: "관리자 공식 댓글이 등록되었습니다." });
+
+    const post = getAllCommunityPostsRaw().find(p => p.id === postId);
+    if (post) openAdminCommentsModal(post);
+    renderCommunityTable();
+  });
+
+  adminReplyInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') btnSendReply?.click();
+  });
+}
+
+function updateSelectedCount() {
+  const countEl = document.getElementById('admin-comm-selected-count');
+  if (countEl) countEl.textContent = adminCommSelectedIds.size;
+  const checkAll = document.getElementById('admin-comm-check-all');
+  const allCbs = document.querySelectorAll('.admin-comm-checkbox');
+  if (checkAll && allCbs.length > 0) {
+    checkAll.checked = adminCommSelectedIds.size === allCbs.length;
+  }
+}
+
 function renderCommunityTable() {
   const tbody = document.getElementById('community-table-body');
   if (!tbody) return;
 
-  const posts = getCommunityPosts();
+  const rawPosts = getAllCommunityPostsRaw();
 
-  if (posts.length === 0) {
+  // Update Stats Counters
+  const totalPosts = rawPosts.length;
+  const pinnedCount = rawPosts.filter(p => p.isPinned || p.category === 'Notice').length;
+  const hiddenCount = rawPosts.filter(p => p.status === 'hidden').length;
+  const repliesTotal = rawPosts.reduce((acc, p) => acc + (p.replies || []).length, 0);
+  const likesTotal = rawPosts.reduce((acc, p) => acc + (p.likes || 0), 0);
+
+  const elStatTotal = document.getElementById('admin-comm-stat-total');
+  const elStatPinned = document.getElementById('admin-comm-stat-pinned');
+  const elStatHidden = document.getElementById('admin-comm-stat-hidden');
+  const elStatReplies = document.getElementById('admin-comm-stat-replies');
+  const elStatLikes = document.getElementById('admin-comm-stat-likes');
+  const elHeaderComm = document.getElementById('stat-community-count');
+
+  if (elStatTotal) elStatTotal.textContent = totalPosts;
+  if (elStatPinned) elStatPinned.textContent = pinnedCount;
+  if (elStatHidden) elStatHidden.textContent = hiddenCount;
+  if (elStatReplies) elStatReplies.textContent = repliesTotal;
+  if (elStatLikes) elStatLikes.textContent = likesTotal;
+  if (elHeaderComm) elHeaderComm.textContent = totalPosts;
+
+  // Filter posts
+  let filtered = [...rawPosts];
+
+  // Status Filter
+  if (adminCommFilterStatus === 'published') {
+    filtered = filtered.filter(p => p.status !== 'hidden');
+  } else if (adminCommFilterStatus === 'pinned') {
+    filtered = filtered.filter(p => p.isPinned || p.category === 'Notice');
+  } else if (adminCommFilterStatus === 'hidden') {
+    filtered = filtered.filter(p => p.status === 'hidden');
+  }
+
+  // Category Filter
+  if (adminCommFilterCat !== 'all') {
+    filtered = filtered.filter(p => p.category === adminCommFilterCat);
+  }
+
+  // Search Filter
+  if (adminCommSearchQuery) {
+    const q = adminCommSearchQuery.toLowerCase();
+    filtered = filtered.filter(p =>
+      p.title.toLowerCase().includes(q) ||
+      p.content.toLowerCase().includes(q) ||
+      p.author.toLowerCase().includes(q) ||
+      (p.tags && p.tags.some(t => t.toLowerCase().includes(q)))
+    );
+  }
+
+  if (filtered.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="7" style="text-align: center; padding: 28px; color: #94A3B8;">
-          현재 등록된 커뮤니티 게시글이 없습니다.
+        <td colspan="9" style="text-align: center; padding: 36px; color: #94A3B8;">
+          조건에 일치하는 커뮤니티 게시글이 없습니다.
         </td>
       </tr>
     `;
+    updateSelectedCount();
     return;
   }
 
-  tbody.innerHTML = posts.map(post => {
+  tbody.innerHTML = filtered.map(post => {
     const repliesCount = (post.replies || []).length;
+    const isChecked = adminCommSelectedIds.has(post.id);
+    const isHidden = post.status === 'hidden';
+
     return `
-      <tr>
-        <td>
-          <div style="font-weight: 600; color: #FFFFFF;">${escapeHtml(post.author)}</div>
-          <div style="font-size: 0.78rem; color: #94A3B8;">${escapeHtml(post.country)}</div>
+      <tr style="${isHidden ? 'opacity: 0.65; background: rgba(15, 23, 42, 0.4);' : ''}">
+        <td style="text-align: center;">
+          <input type="checkbox" class="admin-comm-checkbox" data-id="${post.id}" ${isChecked ? 'checked' : ''} />
         </td>
         <td>
-          <span style="background: rgba(236, 72, 153, 0.15); color: #F472B6; padding: 3px 8px; border-radius: var(--radius-xs); font-size: 0.78rem; font-weight: 600;">
+          ${post.isPinned ? `<span class="badge-status-pinned">📌 공지</span>` : isHidden ? `<span class="badge-status-hidden">🔒 숨김</span>` : `<span class="badge-status-published">🟢 공개중</span>`}
+        </td>
+        <td style="color: #94A3B8; font-size: 0.8rem;">
+          #${post.postNo || '-'}
+        </td>
+        <td>
+          <span style="background: rgba(56, 189, 248, 0.12); color: #38BDF8; padding: 2px 8px; border-radius: var(--radius-xs); font-size: 0.76rem; font-weight: 600;">
             ${escapeHtml(post.category)}
           </span>
         </td>
-        <td style="max-width: 320px;">
-          <div style="font-weight: 600; color: #F8FAFC; font-size: 0.9rem; margin-bottom: 2px;">${escapeHtml(post.title)}</div>
-          <div style="font-size: 0.8rem; color: #94A3B8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(post.content)}</div>
+        <td style="max-width: 300px;">
+          <div class="admin-comm-clickable-title" data-id="${post.id}" style="font-weight: 600; color: #F8FAFC; font-size: 0.9rem; margin-bottom: 2px; cursor: pointer;" title="클릭하여 수정">
+            ${escapeHtml(post.title)}
+          </div>
+          <div style="font-size: 0.78rem; color: #94A3B8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            ${escapeHtml(post.content)}
+          </div>
         </td>
-        <td style="color: #F472B6; font-weight: 600;">❤️ ${post.likes || 0}</td>
-        <td style="color: #CBD5E1;">💬 ${repliesCount}개</td>
-        <td style="color: #94A3B8; font-size: 0.8rem;">${post.date}</td>
-        <td style="text-align: right;">
-          <button class="btn-action-icon btn-delete-post" data-id="${post.id}" style="color: #F87171;" title="게시글 삭제">
-            삭제
+        <td>
+          <div style="font-weight: 600; color: #FFFFFF; font-size: 0.84rem;">${escapeHtml(post.author)}</div>
+          <div style="font-size: 0.74rem; color: #94A3B8;">${escapeHtml(post.country)}</div>
+        </td>
+        <td style="font-size: 0.82rem; white-space: nowrap;">
+          <span style="color: #94A3B8;">👁️ ${post.views || 0}</span>
+          <span style="color: #EC4899; margin: 0 4px;">❤️ ${post.likes || 0}</span>
+          <span style="color: #38BDF8;">💬 ${repliesCount}</span>
+        </td>
+        <td style="color: #94A3B8; font-size: 0.78rem; white-space: nowrap;">
+          ${post.date}
+        <td style="text-align: right; white-space: nowrap;">
+          <a href="/community.html?postId=${post.id}" target="_blank" class="btn-action-icon" style="color: #60A5FA; font-size: 0.78rem; text-decoration: none;" title="독자 화면에서 바로보기">
+            ↗ 보기
+          </a>
+          <button class="btn-action-icon btn-admin-comm-pin" data-id="${post.id}" title="${post.isPinned ? '공지 해제' : '상단 공지 지정'}" style="font-size: 0.78rem; color: #F472B6;">
+            ${post.isPinned ? '📌 해제' : '📌 공지'}
+          </button>
+          <button class="btn-action-icon btn-admin-comm-hide" data-id="${post.id}" title="${isHidden ? '공개 복원' : '사이트에서 숨김(블라인드)'}" style="font-size: 0.78rem; color: ${isHidden ? '#34D399' : '#FCD34D'};">
+            ${isHidden ? '👁️ 공개' : '🔒 숨김'}
+          </button>
+          <button class="btn-action-icon btn-admin-comm-edit" data-id="${post.id}" title="게시글 내용 수정" style="font-size: 0.78rem; color: #38BDF8;">
+            ✏️ 수정
+          </button>
+          <button class="btn-action-icon btn-admin-comm-replies" data-id="${post.id}" title="댓글 목록 및 삭제" style="font-size: 0.78rem; color: #A78BFA;">
+            💬 댓글 (${repliesCount})
+          </button>
+          <button class="btn-action-icon btn-admin-comm-delete" data-id="${post.id}" style="color: #F87171; font-size: 0.78rem;" title="게시글 삭제">
+            🗑️ 삭제
           </button>
         </td>
       </tr>
     `;
   }).join('');
 
-  tbody.querySelectorAll('.btn-delete-post').forEach(btn => {
+  // Row Checkboxes
+  tbody.querySelectorAll('.admin-comm-checkbox').forEach(cb => {
+    cb.addEventListener('change', () => {
+      if (cb.checked) adminCommSelectedIds.add(cb.dataset.id);
+      else adminCommSelectedIds.delete(cb.dataset.id);
+      updateSelectedCount();
+    });
+  });
+
+  // Clickable title to edit
+  tbody.querySelectorAll('.admin-comm-clickable-title, .btn-admin-comm-edit').forEach(el => {
+    el.addEventListener('click', () => {
+      const postId = el.dataset.id;
+      const post = rawPosts.find(p => p.id === postId);
+      if (post) openAdminEditModal(post);
+    });
+  });
+
+  // Pin Toggle
+  tbody.querySelectorAll('.btn-admin-comm-pin').forEach(btn => {
     btn.addEventListener('click', () => {
       const postId = btn.dataset.id;
-      if (confirm('이 커뮤니티 게시글을 삭제하시겠습니까?')) {
+      const isPinned = togglePinCommunityPost(postId);
+      showToast({
+        title: isPinned ? "상단 공지 지정" : "공지 해제 완료",
+        message: isPinned ? "해당 글이 사용자 게시판 최상단에 고정됩니다." : "일반 게시글로 전환되었습니다."
+      });
+      renderCommunityTable();
+    });
+  });
+
+  // Hide Toggle
+  tbody.querySelectorAll('.btn-admin-comm-hide').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const postId = btn.dataset.id;
+      const status = toggleHideCommunityPost(postId);
+      showToast({
+        title: status === 'hidden' ? "게시글 숨김(블라인드) 완료" : "게시글 공개 복구 완료",
+        message: status === 'hidden' ? "사용자 화면에서 즉시 가려집니다." : "사용자 화면에 다시 노출됩니다."
+      });
+      renderCommunityTable();
+    });
+  });
+
+  // Comment Moderation Modal
+  tbody.querySelectorAll('.btn-admin-comm-replies').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const postId = btn.dataset.id;
+      const post = rawPosts.find(p => p.id === postId);
+      if (post) openAdminCommentsModal(post);
+    });
+  });
+
+  // Delete Post
+  tbody.querySelectorAll('.btn-admin-comm-delete').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const postId = btn.dataset.id;
+      if (confirm('이 커뮤니티 게시글을 영구 삭제하시겠습니까?')) {
         deleteCommunityPost(postId);
+        adminCommSelectedIds.delete(postId);
         updateTopCounters();
         renderCommunityTable();
         showToast({ title: "게시글 삭제 완료", message: "커뮤니티 글이 삭제되었습니다." });
       }
     });
   });
+
+  updateSelectedCount();
+}
+
+function openAdminEditModal(post) {
+  const modal = document.getElementById('modal-admin-comm-editor');
+  const titleHeading = document.getElementById('admin-comm-modal-title');
+  const editIdInput = document.getElementById('admin-comm-edit-id');
+
+  if (!modal) return;
+
+  if (editIdInput) editIdInput.value = post.id;
+  if (titleHeading) titleHeading.textContent = `게시글 수정 (#${post.postNo || ''})`;
+
+  document.getElementById('admin-comm-input-category').value = post.category || 'Routine Advice';
+  document.getElementById('admin-comm-input-pinned').checked = !!post.isPinned;
+  document.getElementById('admin-comm-input-title').value = post.title || '';
+  document.getElementById('admin-comm-input-author').value = post.author || '';
+  document.getElementById('admin-comm-input-country').value = post.country || '';
+  document.getElementById('admin-comm-input-tags').value = (post.tags || []).join(', ');
+  document.getElementById('admin-comm-input-content').value = post.content || '';
+
+  modal.classList.add('open');
+}
+
+function openAdminCommentsModal(post) {
+  const modal = document.getElementById('modal-admin-comm-comments');
+  const targetTitle = document.getElementById('admin-comm-comments-target-title');
+  const container = document.getElementById('admin-comm-comments-container');
+  const postIdInput = document.getElementById('admin-comm-comments-post-id');
+
+  if (!modal || !container) return;
+
+  if (postIdInput) postIdInput.value = post.id;
+  if (targetTitle) targetTitle.textContent = `대상 글: "${post.title}"`;
+
+  const replies = post.replies || [];
+
+  if (replies.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 24px; color: #94A3B8; font-size: 0.86rem; background: #0F172A; border-radius: var(--radius-sm);">
+        등록된 댓글이 없습니다.
+      </div>
+    `;
+  } else {
+    container.innerHTML = replies.map(r => `
+      <div class="admin-comm-comment-row" id="admin-comment-${r.id}">
+        <div style="flex: 1;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <div style="font-weight: 600; color: #FFFFFF; font-size: 0.84rem;">
+              <span>${escapeHtml(r.author)}</span>
+              <span style="color: #94A3B8; font-size: 0.76rem; font-weight: normal; margin-left: 6px;">${escapeHtml(r.country || '')}</span>
+            </div>
+            <div style="font-size: 0.74rem; color: #94A3B8;">${r.date}</div>
+          </div>
+          <div style="font-size: 0.85rem; color: #CBD5E1; line-height: 1.4; word-break: break-word;">
+            ${escapeHtml(r.content)}
+          </div>
+        </div>
+        <div>
+          <button class="btn-action-icon btn-admin-delete-comment" data-post-id="${post.id}" data-comment-id="${r.id}" style="color: #F87171; font-size: 0.78rem;" title="댓글 삭제">
+            삭제
+          </button>
+        </div>
+      </div>
+    `).join('');
+
+    container.querySelectorAll('.btn-admin-delete-comment').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const pId = btn.dataset.postId;
+        const cId = btn.dataset.commentId;
+        if (confirm('이 댓글을 삭제하시겠습니까?')) {
+          deleteCommunityComment(pId, cId, '', true);
+          showToast({ title: "댓글 삭제 완료", message: "댓글이 삭제되었습니다." });
+          const refreshed = getAllCommunityPostsRaw().find(p => p.id === pId);
+          if (refreshed) openAdminCommentsModal(refreshed);
+          renderCommunityTable();
+        }
+      });
+    });
+  }
+
+  modal.classList.add('open');
 }
 
 function escapeHtml(str) {

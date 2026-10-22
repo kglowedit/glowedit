@@ -21,11 +21,11 @@
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>" />
-  <script type="module" crossorigin src="/assets/main-BIXPRlDr.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/affiliate-Xnskpm3r.js">
-  <link rel="modulepreload" crossorigin href="/assets/seo-BdTqqitd.js">
+  <script type="module" crossorigin src="/assets/main-CSFbnwjT.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/affiliate-BxmYfbm8.js">
+  <link rel="modulepreload" crossorigin href="/assets/seo-Bkyl5X7b.js">
   <link rel="stylesheet" crossorigin href="/assets/affiliate-Be2WyEVG.css">
-  <link rel="stylesheet" crossorigin href="/assets/seo-DDzrScgO.css">
+  <link rel="stylesheet" crossorigin href="/assets/main-FQ0O12gh.css">
 </head>
 <body>
 
@@ -60,7 +60,7 @@
       <!-- Navigation Links -->
       <nav class="site-nav" aria-label="Main Navigation">
         <a href="#stories" class="nav-link active" data-i18n="navStories">All Articles</a>
-        <a href="#community" class="nav-link" data-i18n="navCommunity">Community Forum</a>
+        <a href="/community.html" class="nav-link" data-i18n="navCommunity">Community Forum</a>
         <a href="#routine-builder" class="nav-link" data-i18n="navRoutineQuiz">Skincare Diagnostic</a>
         <a href="#newsletter" class="nav-link" data-i18n="navNewsletter">Dispatch</a>
       </nav>
@@ -112,7 +112,7 @@
               <span data-i18n="heroCtaRead">Explore Latest Articles</span>
               <span>↓</span>
             </a>
-            <a href="#community" class="btn-secondary">
+            <a href="/community.html" class="btn-secondary">
               <span data-i18n="navCommunity">Community Forum</span>
               <span>💬</span>
             </a>
@@ -176,82 +176,67 @@
       </div>
     </section>
 
-    <!-- Featured Editorial Deep-Dive -->
-    <section class="featured-section" aria-labelledby="featured-story-title">
-      <div id="featured-story-wrap">
-        <!-- Rendered by user-app.js -->
-      </div>
-    </section>
-
-    <!-- Blog Articles Grid -->
-    <section class="articles-section" id="stories" aria-labelledby="stories-heading">
-      <div class="section-header">
-        <div class="section-title-wrap">
-          <h2 id="stories-heading" class="section-title" data-i18n="navStories">All Articles & Deep-Dives</h2>
-          <p class="section-subtitle">Click any article to read the full guide on its dedicated page.</p>
-        </div>
-      </div>
-      <div class="articles-grid" id="articles-grid">
-        <!-- Dynamic article cards -->
-      </div>
-    </section>
-
-    <!-- Community Forum & Discussions (게시판) -->
-    <section class="community-section" id="community" aria-labelledby="community-heading">
-      <div class="community-header-bar">
-        <div>
-          <span class="hero-eyebrow" style="margin-bottom: 6px;">
-            <span>💬</span>
-            <span data-i18n="communityBadge">Global Skincare Forum</span>
-          </span>
-          <h2 id="community-heading" class="section-title" data-i18n="communityTitle">K-Beauty Community Discussions</h2>
-          <p class="section-subtitle" data-i18n="communitySubtitle">Ask questions, troubleshoot your routine, and exchange holy grail discoveries with skincare lovers worldwide.</p>
-        </div>
-        <div>
-          <button class="btn-primary" id="btn-open-new-post">
-            <span data-i18n="askQuestionBtn">+ Start a Discussion</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Community New Post Form (Toggled) -->
-      <div class="community-new-post-modal" id="community-new-post-box">
-        <h3 style="font-family: var(--font-serif); font-size: 1.3rem; margin-bottom: 16px;" data-i18n="postModalTitle">Ask the K-Beauty Community</h3>
-        <form id="community-post-form">
-          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 12px;">
-            <input type="text" id="comm-post-title" class="custom-select" required data-i18n-placeholder="postModalTitlePlaceholder" placeholder="What's your question or holy grail discovery?" />
-            <select id="comm-post-category" class="custom-select">
-              <option value="Routine Advice">Routine Advice</option>
-              <option value="Holy Grail Reviews">Holy Grail Reviews</option>
-              <option value="Olive Young Haul">Olive Young Haul</option>
-              <option value="Ingredient Q&A">Ingredient Q&A</option>
-            </select>
+    <!-- Main Editorial Layout: Articles Grid (Left) & Latest Community Frame (Right) -->
+    <div class="main-content-layout">
+      <!-- Left Column: Featured Editorial & Article Grid -->
+      <div class="main-articles-col">
+        <!-- Featured Editorial Deep-Dive -->
+        <section class="featured-section" aria-labelledby="featured-story-title">
+          <div id="featured-story-wrap">
+            <!-- Rendered by user-app.js -->
           </div>
-          <textarea id="comm-post-content" class="custom-select" rows="3" required data-i18n-placeholder="postModalContentPlaceholder" placeholder="Share details about your skin type, current routine, or question..." style="margin-bottom: 12px;"></textarea>
-          <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: center;">
-            <input type="text" id="comm-post-author" class="custom-select" required data-i18n-placeholder="postModalAuthorPlaceholder" placeholder="Your Name / Nickname" />
-            <input type="text" id="comm-post-country" class="custom-select" data-i18n-placeholder="postModalCountryPlaceholder" placeholder="Country (e.g. USA, UK, Japan)" />
-            <div style="display: flex; gap: 8px;">
-              <button type="button" class="btn-secondary" id="btn-cancel-post" style="padding: 10px 18px;">Cancel</button>
-              <button type="submit" class="btn-primary" style="padding: 10px 22px;" data-i18n="submitPostBtn">Publish</button>
+        </section>
+
+        <!-- Blog Articles Grid -->
+        <section class="articles-section" id="stories" aria-labelledby="stories-heading">
+          <div class="section-header">
+            <div class="section-title-wrap">
+              <h2 id="stories-heading" class="section-title" data-i18n="navStories">All Articles & Deep-Dives</h2>
+              <p class="section-subtitle">Click any article to read the full guide on its dedicated page.</p>
             </div>
           </div>
-        </form>
+          <div class="articles-grid" id="articles-grid">
+            <!-- Dynamic article cards -->
+          </div>
+        </section>
       </div>
 
-      <!-- Community Category Filter Tabs -->
-      <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
-        <button class="filter-pill active comm-filter-pill" data-comm-category="all" data-i18n="postCategoryAll">All Topics</button>
-        <button class="filter-pill comm-filter-pill" data-comm-category="Routine Advice" data-i18n="postCategoryAdvice">Routine Advice</button>
-        <button class="filter-pill comm-filter-pill" data-comm-category="Holy Grail Reviews" data-i18n="postCategoryReviews">Holy Grail Reviews</button>
-        <button class="filter-pill comm-filter-pill" data-comm-category="Olive Young Haul" data-i18n="postCategoryHaul">Olive Young Haul</button>
-      </div>
+      <!-- Right Column: Sidebar Frame with 5 Latest Community Posts & Quick Access -->
+      <aside class="main-sidebar-col" aria-label="Community & Quick Navigation">
+        <!-- 5 Latest Community Discussions Widget -->
+        <div class="sidebar-widget-card sidebar-community-widget">
+          <div class="sidebar-widget-header">
+            <div class="sidebar-widget-title-group">
+              <span class="sidebar-widget-icon">💬</span>
+              <h3 class="sidebar-widget-title" data-i18n="sidebarCommTitle">Community Discussions</h3>
+            </div>
+            <a href="/community.html" class="sidebar-widget-more" data-i18n="sidebarViewAll">View All ↗</a>
+          </div>
+          <p class="sidebar-widget-sub">Latest questions, routines & reviews from Seoul skincare lovers.</p>
+          
+          <!-- Exactly 5 latest community post titles rendered dynamically -->
+          <ol class="sidebar-comm-list" id="sidebar-community-list">
+            <!-- Populated by user-app.js renderSidebarCommunity() -->
+          </ol>
 
-      <!-- Community Posts List -->
-      <div class="community-posts-list" id="community-posts-list">
-        <!-- Rendered by user-app.js -->
-      </div>
-    </section>
+          <div class="sidebar-widget-footer">
+            <a href="/community.html?write=true" class="sidebar-btn-write" data-i18n="sidebarWritePost">+ Start Discussion</a>
+            <a href="/community.html" class="sidebar-btn-board">Full Board →</a>
+          </div>
+        </div>
+
+        <!-- Reader Exclusive Privilege Card -->
+        <div class="sidebar-widget-card sidebar-promo-widget">
+          <div class="sidebar-promo-badge">READER PRIVILEGE</div>
+          <h4 style="font-family: var(--font-serif); font-size: 1.08rem; margin: 10px 0 6px 0; color: var(--color-text-main);">Olive Young Global 10% OFF</h4>
+          <p style="font-size: 0.82rem; color: var(--color-text-secondary); line-height: 1.5; margin-bottom: 12px;">Exclusive verified reader code valid on authentic Korean skincare & cosmetics shipped worldwide.</p>
+          <div class="sidebar-code-box">
+            <code>GLOW10</code>
+            <button class="btn-sidebar-copy" id="sidebar-promo-copy-btn" type="button" title="Copy discount code">Copy</button>
+          </div>
+        </div>
+      </aside>
+    </div>
 
     <!-- Interactive Skincare Routine Diagnostic -->
     <section class="routine-builder-section" id="routine-builder" aria-labelledby="routine-heading">
@@ -341,6 +326,8 @@
     </div>
   </div>
 
+
+
   <!-- Footer -->
   <footer class="site-footer">
     <div class="footer-container">
@@ -355,7 +342,7 @@
           <div class="footer-col-title" data-i18n="footerFastLinks">Quick Navigation</div>
           <ul class="footer-links-list">
             <li><a href="#stories" data-i18n="navStories">All Articles</a></li>
-            <li><a href="#community" data-i18n="navCommunity">Community Forum</a></li>
+            <li><a href="/community.html" data-i18n="navCommunity">Community Forum</a></li>
             <li><a href="#routine-builder" data-i18n="navRoutineQuiz">Routine Diagnostic</a></li>
             <li><a href="/admin.html" data-i18n="adminStudio">Admin Management Studio</a></li>
           </ul>
