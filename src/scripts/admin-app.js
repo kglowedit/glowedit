@@ -1,0 +1,1263 @@
+/**
+ * Admin Application Logic for K-beuty Glow Edit (한국어 관리자 스튜디오)
+ * 핵심 블로그 기능:
+ * 1. 새 글 작성 (한국어 원문 입력 -> AI 영문·중문·일문 자동 번역 -> 실시간 독자 화면 미리보기)
+ * 2. 카테고리 관리
+ * 3. 태그 관리
+ * 4. 커뮤니티(게시판) 관리
+ */
+
+import { showToast } from './affiliate.js';
+import { 
+  getArticles, 
+  saveArticle, 
+  deleteArticle, 
+  toggleArticleStatus,
+  getCategories, 
+  saveCategory, 
+  deleteCategory, 
+  getTags, 
+  saveTag, 
+  deleteTag, 
+  getCommunityPosts, 
+  deleteCommunityPost, 
+  resetDemoData 
+} from './data.js';
+import { 
+  translateFullArticle, 
+  generateSlug,
+  getGeminiApiKey,
+  setGeminiApiKey,
+  hasGeminiApiKey,
+  testGeminiApiKey,
+  getActiveGeminiModel,
+  getPreferredEngine,
+  setPreferredEngine,
+  isAutoFallbackEnabled,
+  setAutoFallbackEnabled
+} from './translator.js';
+
+let activeTab = 'articles';
+let currentArticleStatusFilter = 'all'; // 'all' | 'published' | 'draft'
+let editingArticle = null;
+let currentEditorLang = 'ko'; // 기본 작성 언어: 한국어
+let currentPreviewLang = 'en'; // 기본 미리보기 언어: 영문
+
+let tempArticleLangData = {
+  ko: { title: '', excerpt: '', content: '' },
+  en: { title: '', excerpt: '', content: '' },
+  zh: { title: '', excerpt: '', content: '' },
+  ja: { title: '', excerpt: '', content: '' }
+};
+
+export function initAdminApp() {
+  setupNavigationTabs();
+  setupArticleStatusFilters();
+  updateTopCounters();
+  renderArticlesTable();
+  renderCategoriesTable();
+  renderTagsChips();
+  renderCommunityTable();
+  setupArticleEditor();
+  setupCategoryForm();
+  setupTagForm();
+  setupGeminiSettings();
+  setupResetDemo();
+}
+
+function updateTopCounters() {
+  const articles = getArticles();
+  const categories = getCategories();
+  const tags = getTags();
+  const communityPosts = getCommunityPosts();
+
+  const publishedArticles = articles.filter(a => (a.status || 'published') === 'published');
+  const draftArticles = articles.filter(a => a.status === 'draft');
+
+  const elArt = document.getElementById('stat-articles-count');
+  const elPublished = document.getElementById('stat-published-count');
+  const elDrafts = document.getElementById('stat-drafts-count');
+  const elCat = document.getElementById('stat-categories-count');
+  const elTag = document.getElementById('stat-tags-count');
+  const elComm = document.getElementById('stat-community-count');
+
+  if (elArt) elArt.textContent = articles.length;
+  if (elPublished) elPublished.textContent = publishedArticles.length;
+  if (elDrafts) elDrafts.textContent = draftArticles.length;
+  if (elCat) elCat.textContent = categories.length;
+  if (elTag) elTag.textContent = tags.length;
+  if (elComm) elComm.textContent = communityPosts.length;
+
+  const countFilterAll = document.getElementById('count-filter-all');
+  const countFilterPub = document.getElementById('count-filter-published');
+  const countFilterDraft = document.getElementById('count-filter-draft');
+
+  if (countFilterAll) countFilterAll.textContent = articles.length;
+  if (countFilterPub) countFilterPub.textContent = publishedArticles.length;
+  if (countFilterDraft) countFilterDraft.textContent = draftArticles.length;
+}
+
+function setupArticleStatusFilters() {
+  document.querySelectorAll('.status-filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.status-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentArticleStatusFilter = btn.dataset.statusFilter || 'all';
+      renderArticlesTable();
+    });
+  });
+}
+
+function setupNavigationTabs() {
+  document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+
+      btn.classList.add('active');
+      const panel = document.getElementById(`panel-${tab}`);
+      if (panel) panel.classList.add('active');
+      activeTab = tab;
+
+      updateTopCounters();
+      if (tab === 'articles') renderArticlesTable();
+      if (tab === 'categories') renderCategoriesTable();
+      if (tab === 'tags') renderTagsChips();
+      if (tab === 'community') renderCommunityTable();
+    });
+  });
+}
+
+function setupResetDemo() {
+  const resetBtn = document.getElementById('btn-reset-demo');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      if (confirm('기본 데모 데이터(글, 카테고리, 태그, 커뮤니티 게시글)를 초기 상태로 복원하시겠습니까?')) {
+        resetDemoData();
+        updateTopCounters();
+        renderArticlesTable();
+        renderCategoriesTable();
+        renderTagsChips();
+        renderCommunityTable();
+        showToast({ title: "초기화 완료", message: "기본 데모 콘텐츠가 복구되었습니다." });
+      }
+    });
+  }
+}
+
+/* =========================================================
+   1. 에디토리얼 글 목록 & 새 글 작성 (Articles CMS)
+========================================================= */
+function renderArticlesTable() {
+  const tbody = document.getElementById('articles-table-body');
+  if (!tbody) return;
+
+  const allArticles = getArticles();
+  const categories = getCategories();
+
+  let filteredArticles = allArticles;
+  if (currentArticleStatusFilter === 'published') {
+    filteredArticles = allArticles.filter(a => (a.status || 'published') === 'published');
+  } else if (currentArticleStatusFilter === 'draft') {
+    filteredArticles = allArticles.filter(a => a.status === 'draft');
+  }
+
+  if (filteredArticles.length === 0) {
+    const filterMsg = currentArticleStatusFilter === 'published'
+      ? '발행된 글이 없습니다.'
+      : currentArticleStatusFilter === 'draft'
+      ? '임시 저장된 글이 없습니다.'
+      : '등록된 글이 없습니다. [새 글 작성하기]를 눌러 첫 번째 에디토리얼을 작성해보세요.';
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" style="text-align: center; padding: 32px; color: #94A3B8;">
+          ${filterMsg}
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = filteredArticles.map(art => {
+    const titleEn = art.title.en || art.title.ko || 'Untitled';
+    const catObj = categories.find(c => c.id === art.category);
+    const catName = catObj?.name?.en || art.category;
+    const articlePageUrl = `/article.html?slug=${encodeURIComponent(art.slug)}`;
+    const isDraft = art.status === 'draft';
+
+    const statusBadge = isDraft 
+      ? `<span class="badge-status-draft">🟡 임시 저장</span>`
+      : `<span class="badge-status-published">🟢 발행됨</span>`;
+
+    const toggleStatusBtn = isDraft
+      ? `<button class="btn-action-icon btn-toggle-status" data-id="${art.id}" data-target-status="published" title="사이트에 즉시 공개 발행" style="color: #10B981; border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.1); margin-right: 4px;">
+           🚀 즉시 발행
+         </button>`
+      : `<button class="btn-action-icon btn-toggle-status" data-id="${art.id}" data-target-status="draft" title="발행 취소 및 임시 저장(비공개)으로 전환" style="color: #FBBF24; border-color: rgba(245, 158, 11, 0.4); background: rgba(245, 158, 11, 0.1); margin-right: 4px;">
+           🔒 비공개 전환
+         </button>`;
+
+    return `
+      <tr style="${isDraft ? 'background: rgba(245, 158, 11, 0.03);' : ''}">
+        <td>
+          <img src="${art.coverImage}" alt="${titleEn}" style="width: 56px; height: 42px; object-fit: cover; border-radius: var(--radius-xs); border: 1px solid #334155;" />
+        </td>
+        <td>
+          <div style="font-weight: 600; color: #FFFFFF; font-size: 0.92rem;">
+            ${escapeHtml(titleEn)}
+            ${isDraft ? '<span style="font-size: 0.72rem; color: #FCD34D; font-weight: 600; margin-left: 6px;">[비공개]</span>' : ''}
+          </div>
+          <div style="font-size: 0.78rem; color: #94A3B8; margin-top: 2px;">
+            ${art.featured ? '<span style="color: #F59E0B; font-weight: 700; margin-right: 6px;">[⭐ 메인추천]</span>' : ''}
+            ${art.author?.name || 'Editor'} • ${art.readTime}분 분량
+          </div>
+        </td>
+        <td>
+          ${statusBadge}
+        </td>
+        <td>
+          <a href="${articlePageUrl}" target="_blank" style="color: #38BDF8; font-family: monospace; font-size: 0.8rem; text-decoration: none;">
+            ${escapeHtml(art.slug)} ↗
+          </a>
+        </td>
+        <td>
+          <span style="background: rgba(56, 189, 248, 0.15); color: #38BDF8; padding: 3px 8px; border-radius: var(--radius-xs); font-size: 0.78rem; font-weight: 600;">
+            ${escapeHtml(catName)}
+          </span>
+        </td>
+        <td style="color: #CBD5E1;">${(art.views || 0).toLocaleString()}회</td>
+        <td style="color: #94A3B8; font-size: 0.82rem;">${art.publishDate || '2026-10-15'}</td>
+        <td style="text-align: right; white-space: nowrap;">
+          ${toggleStatusBtn}
+          <a href="${articlePageUrl}" target="_blank" class="btn-action-icon" style="text-decoration: none; display: inline-block; margin-right: 4px;" title="개별 글 페이지 열람">
+            보기
+          </a>
+          <button class="btn-action-icon btn-edit-article" data-id="${art.id}" style="margin-right: 4px;" title="글 수정">
+            수정
+          </button>
+          <button class="btn-action-icon btn-delete-article" data-id="${art.id}" style="color: #F87171;" title="글 삭제">
+            삭제
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  // Attach status toggle action
+  tbody.querySelectorAll('.btn-toggle-status').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const artId = btn.dataset.id;
+      const targetStatus = btn.dataset.targetStatus;
+      const updated = toggleArticleStatus(artId, targetStatus);
+      if (updated) {
+        updateTopCounters();
+        renderArticlesTable();
+        const artTitle = updated.title?.en || updated.title?.ko || '글';
+        if (targetStatus === 'draft') {
+          showToast({
+            title: "🔒 임시 저장(비공개) 전환 완료",
+            message: `[${artTitle}]이 임시 저장 상태로 변경되었습니다. 이제 독자 화면에서 가려집니다.`,
+            icon: "🔒",
+            duration: 4000
+          });
+        } else {
+          showToast({
+            title: "🚀 사이트 즉시 발행 완료",
+            message: `[${artTitle}]이 정상 발행되어 독자들에게 공개되었습니다.`,
+            icon: "🚀",
+            duration: 4000
+          });
+        }
+      }
+    });
+  });
+
+  // Attach edit actions
+  tbody.querySelectorAll('.btn-edit-article').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const artId = btn.dataset.id;
+      openArticleModal(artId);
+    });
+  });
+
+  tbody.querySelectorAll('.btn-delete-article').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const artId = btn.dataset.id;
+      if (confirm('이 글을 삭제하시겠습니까? 삭제된 글은 복원할 수 없습니다.')) {
+        deleteArticle(artId);
+        updateTopCounters();
+        renderArticlesTable();
+        showToast({ title: "글 삭제 완료", message: "게시글이 성공적으로 삭제되었습니다." });
+      }
+    });
+  });
+}
+
+function setupArticleEditor() {
+  const modal = document.getElementById('modal-article-backdrop');
+  const openBtn = document.getElementById('btn-open-article-modal');
+  const closeBtn = document.getElementById('btn-close-article-modal');
+  const cancelBtn = document.getElementById('btn-cancel-article-modal');
+  const form = document.getElementById('form-article-editor');
+  const autoSlugBtn = document.getElementById('btn-auto-slug');
+  const presetCovers = document.getElementById('editor-preset-covers');
+  const translateBtn = document.getElementById('btn-run-translation');
+
+  if (openBtn) {
+    openBtn.addEventListener('click', () => {
+      openArticleModal(null);
+    });
+  }
+
+  if (closeBtn) closeBtn.addEventListener('click', closeArticleModal);
+  if (cancelBtn) cancelBtn.addEventListener('click', closeArticleModal);
+
+  // Save as Draft quick button handler
+  const saveAsDraftBtn = document.getElementById('btn-save-as-draft');
+  if (saveAsDraftBtn) {
+    saveAsDraftBtn.addEventListener('click', () => {
+      const statusSelect = document.getElementById('editor-status');
+      if (statusSelect) statusSelect.value = 'draft';
+      if (form.requestSubmit) {
+        form.requestSubmit();
+      } else {
+        form.dispatchEvent(new Event('submit', { cancelable: true }));
+      }
+    });
+  }
+
+  // Auto slug generator from English title
+  if (autoSlugBtn) {
+    autoSlugBtn.addEventListener('click', () => {
+      saveCurrentEditorLangFields();
+      const titleEn = tempArticleLangData.en.title || tempArticleLangData.ko.title;
+      if (titleEn) {
+        document.getElementById('editor-slug').value = generateSlug(titleEn);
+      }
+    });
+  }
+
+  // Preset cover picker
+  if (presetCovers) {
+    presetCovers.addEventListener('change', (e) => {
+      if (e.target.value) {
+        document.getElementById('editor-cover').value = e.target.value;
+        if (currentEditorLang === 'preview') {
+          renderLivePreview(currentPreviewLang);
+        }
+      }
+    });
+  }
+
+  // Quick Korean sample fill helper
+  const fillSampleBtn = document.getElementById('btn-fill-sample-ko');
+  if (fillSampleBtn) {
+    fillSampleBtn.addEventListener('click', () => {
+      tempArticleLangData.ko = {
+        title: "2026 올리브영 1위 선크림: 라운드랩 자작나무 수분 선크림 분석",
+        excerpt: "백탁 없는 가벼운 로션 제형과 인제 자작나무 수액의 깊은 보습력을 갖춘 한국 1위 선크림의 피부과 테스트 결과 및 올리브영 글로벌 직구 팁",
+        content: `### 1. 왜 올리브영 1위 선크림인가?
+
+한국에서는 선크림을 단순한 여름용 화장품이 아닌 매일 바르는 스킨케어의 마지막 단계로 취급합니다. 라운드랩 자작나무 수분 선크림은 로션처럼 가볍게 스며들어 화장이 밀리지 않습니다.
+
+### 2. 핵심 유효 성분 및 효능
+• 인제 자작나무 수액: 피부 속 깊은 수분 공급 및 쿨링 효과
+• 비타 히알루론산: 건조한 환경에서도 24시간 촉촉함 유지
+• 논코메도제닉 테스트 완료: 트러블 및 민감성 피부도 안심 사용
+
+### 3. 올리브영 글로벌 직구 팁
+올리브영 글로벌 몰에서 주문 시 결제창에서 프로모 코드 **GLOW10**을 입력하면 추가 10% 할인을 받을 수 있습니다.`
+      };
+
+      if (currentEditorLang === 'ko') {
+        loadCurrentEditorLangFields();
+      }
+      showToast({ title: "예시 데이터 입력 완료", message: "한국어 원문이 채워졌습니다. 이제 '자동 번역 실행' 버튼을 눌러보세요!" });
+    });
+  }
+
+  // Engine switch buttons in translation banner
+  document.querySelectorAll('[data-engine-choice]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const chosen = btn.dataset.engineChoice;
+      setPreferredEngine(chosen);
+      updateEngineSwitcherUI(chosen);
+      showToast({
+        title: chosen === 'gemini' ? "Gemini AI 번역 엔진 선택" : "기본 구글 번역 엔진 선택",
+        message: chosen === 'gemini' 
+          ? "이제 새 글 작성 시 Gemini AI가 우선 적용됩니다." 
+          : "별도 키 없이 무제한으로 기본 구글 번역이 적용됩니다.",
+        icon: chosen === 'gemini' ? "🤖" : "🌐"
+      });
+    });
+  });
+
+  // AI Translation button click
+  if (translateBtn) {
+    translateBtn.addEventListener('click', handleRunAiTranslation);
+  }
+
+  // Subtabs switching (KO, EN, ZH, JA, preview)
+  document.querySelectorAll('[data-editor-lang]').forEach(tabBtn => {
+    tabBtn.addEventListener('click', () => {
+      saveCurrentEditorLangFields();
+      const targetLang = tabBtn.dataset.editorLang;
+
+      document.querySelectorAll('[data-editor-lang]').forEach(b => b.classList.remove('active'));
+      tabBtn.classList.add('active');
+      currentEditorLang = targetLang;
+
+      const fieldsWrap = document.getElementById('editor-text-fields-wrap');
+      const previewContainer = document.getElementById('editor-preview-container');
+      const translationBanner = document.getElementById('translation-banner-box');
+
+      if (targetLang === 'preview') {
+        // Show live preview
+        if (fieldsWrap) fieldsWrap.style.display = 'none';
+        if (translationBanner) translationBanner.style.display = 'none';
+        if (previewContainer) previewContainer.style.display = 'flex';
+        renderLivePreview(currentPreviewLang);
+      } else {
+        // Show text editing fields
+        if (fieldsWrap) fieldsWrap.style.display = 'block';
+        if (previewContainer) previewContainer.style.display = 'none';
+        if (translationBanner) {
+          // Show translation action box primarily when in Korean authoring mode
+          translationBanner.style.display = targetLang === 'ko' ? 'flex' : 'none';
+        }
+        loadCurrentEditorLangFields();
+      }
+    });
+  });
+
+  // Preview language switcher buttons (inside preview tab)
+  document.querySelectorAll('[data-preview-lang]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-preview-lang]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentPreviewLang = btn.dataset.previewLang;
+      renderLivePreview(currentPreviewLang);
+    });
+  });
+
+  // Form submission
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      saveCurrentEditorLangFields();
+
+      let slug = document.getElementById('editor-slug').value.trim();
+      const category = document.getElementById('editor-category').value;
+      const skinType = document.getElementById('editor-skintype').value;
+      const readTime = parseInt(document.getElementById('editor-readtime').value, 10) || 5;
+      const featured = document.getElementById('editor-featured').value === 'true';
+      const status = document.getElementById('editor-status')?.value || 'published';
+      const coverImage = document.getElementById('editor-cover').value.trim();
+
+      // Ensure English title exists; if user only typed Korean, translate automatically!
+      if (!tempArticleLangData.en.title && tempArticleLangData.ko.title) {
+        showToast({ title: "자동 번역 진행", message: "영문 번역본을 자동으로 완성하여 저장합니다..." });
+        try {
+          const res = await translateFullArticle({
+            titleKo: tempArticleLangData.ko.title,
+            excerptKo: tempArticleLangData.ko.excerpt,
+            contentKo: tempArticleLangData.ko.content
+          });
+          tempArticleLangData.en = res.en;
+          tempArticleLangData.zh = res.zh;
+          tempArticleLangData.ja = res.ja;
+          if (!slug) slug = res.slug;
+        } catch (err) {
+          console.error("Auto translation on submit failed:", err);
+          tempArticleLangData.en.title = tempArticleLangData.ko.title;
+        }
+      }
+
+      if (!slug) {
+        slug = generateSlug(tempArticleLangData.en.title || tempArticleLangData.ko.title || `article-${Date.now()}`);
+      }
+
+      const isNew = !editingArticle;
+      const articleId = isNew ? slug : editingArticle.id;
+
+      const articlePayload = {
+        id: articleId,
+        slug: slug,
+        status: status,
+        featured: featured,
+        category: category,
+        skinType: skinType,
+        coverImage: coverImage || '/assets/images/glass-skin.jpg',
+        readTime: readTime,
+        views: editingArticle ? editingArticle.views : 1,
+        publishDate: editingArticle ? editingArticle.publishDate : new Date().toISOString().split('T')[0],
+        author: editingArticle ? editingArticle.author : {
+          name: "Seoul Beauty Desk",
+          role: "Senior Clinical Editor",
+          avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80"
+        },
+        title: {
+          ko: tempArticleLangData.ko.title,
+          en: tempArticleLangData.en.title || tempArticleLangData.ko.title,
+          zh: tempArticleLangData.zh.title || tempArticleLangData.en.title || tempArticleLangData.ko.title,
+          ja: tempArticleLangData.ja.title || tempArticleLangData.en.title || tempArticleLangData.ko.title
+        },
+        excerpt: {
+          ko: tempArticleLangData.ko.excerpt,
+          en: tempArticleLangData.en.excerpt || tempArticleLangData.ko.excerpt,
+          zh: tempArticleLangData.zh.excerpt || tempArticleLangData.en.excerpt || tempArticleLangData.ko.excerpt,
+          ja: tempArticleLangData.ja.excerpt || tempArticleLangData.en.excerpt || tempArticleLangData.ko.excerpt
+        },
+        content: {
+          ko: tempArticleLangData.ko.content,
+          en: tempArticleLangData.en.content || tempArticleLangData.ko.content,
+          zh: tempArticleLangData.zh.content || tempArticleLangData.en.content || tempArticleLangData.ko.content,
+          ja: tempArticleLangData.ja.content || tempArticleLangData.en.content || tempArticleLangData.ko.content
+        },
+        products: editingArticle?.products || [
+          "round-lab-birch-sunscreen",
+          "anua-heartleaf-toner",
+          "torriden-dive-in-serum"
+        ]
+      };
+
+      saveArticle(articlePayload);
+      closeArticleModal();
+      updateTopCounters();
+      renderArticlesTable();
+
+      const isDraft = status === 'draft';
+      showToast({
+        title: isDraft 
+          ? (isNew ? "임시 저장 완료" : "임시 저장(비공개)으로 수정 완료")
+          : (isNew ? "새 글 발행 완료" : "글 수정 및 발행 완료"),
+        message: isDraft 
+          ? `[${articlePayload.title.en || articlePayload.title.ko}]이 비공개(임시 저장)로 저장되었습니다. 독자 화면에서 가려집니다.`
+          : `[${articlePayload.title.en || articlePayload.title.ko}] 글이 정상 발행되었습니다. URL: /article.html?slug=${articlePayload.slug}`,
+        icon: isDraft ? "📁" : "🚀"
+      });
+    });
+  }
+}
+
+async function handleRunAiTranslation() {
+  saveCurrentEditorLangFields();
+  const titleKo = tempArticleLangData.ko.title;
+  const excerptKo = tempArticleLangData.ko.excerpt;
+  const contentKo = tempArticleLangData.ko.content;
+
+  if (!titleKo || !titleKo.trim()) {
+    alert('한국어 글 제목을 먼저 입력해주세요.');
+    document.getElementById('editor-title')?.focus();
+    return;
+  }
+
+  const translateBtn = document.getElementById('btn-run-translation');
+  const icon = document.getElementById('translate-btn-icon');
+  const label = document.getElementById('translate-btn-label');
+  const statusMsg = document.getElementById('translation-status-msg');
+
+  const chosenEngine = getPreferredEngine();
+  const isGemini = chosenEngine === 'gemini';
+  const activeModel = getActiveGeminiModel() || 'gemini-3.8-flash';
+
+  // Set loading state
+  if (translateBtn) translateBtn.disabled = true;
+  if (icon) icon.innerHTML = '<span class="translate-spinner"></span>';
+  if (label) {
+    label.textContent = isGemini ? 'Gemini AI 번역 진행 중...' : '기본 구글 번역 진행 중...';
+  }
+
+  if (statusMsg) {
+    statusMsg.style.display = 'block';
+    if (isGemini) {
+      statusMsg.style.background = 'rgba(139, 92, 246, 0.15)';
+      statusMsg.style.border = '1px solid rgba(139, 92, 246, 0.3)';
+      statusMsg.style.color = '#C4B5FD';
+      statusMsg.innerHTML = `🤖 <strong>Google Gemini (${activeModel}) 번역 실행 중:</strong> K-뷰티 매거진 스타일에 맞추어 고품질 영문, 중문, 일문 번역을 생성하고 있습니다... <br><span style="font-size: 0.78rem; color: #94A3B8;">(Gemini 응답 지연/오류 시 기본 구글 번역으로 자동 안전 전환됩니다)</span>`;
+    } else {
+      statusMsg.style.background = 'rgba(56, 189, 248, 0.15)';
+      statusMsg.style.border = '1px solid rgba(56, 189, 248, 0.3)';
+      statusMsg.style.color = '#7DD3FC';
+      statusMsg.innerHTML = `🌐 <strong>기본 구글 번역 실행 중:</strong> Google Translate로 한국어 원문을 영문, 중문, 일문으로 빠르게 번역하고 있습니다...`;
+    }
+  }
+
+  try {
+    const result = await translateFullArticle({ 
+      titleKo, 
+      excerptKo, 
+      contentKo,
+      engine: chosenEngine 
+    });
+
+    tempArticleLangData.en = result.en;
+    tempArticleLangData.zh = result.zh;
+    tempArticleLangData.ja = result.ja;
+
+    // Fill URL slug if empty or default
+    const slugInput = document.getElementById('editor-slug');
+    if (slugInput && (!slugInput.value.trim() || slugInput.value.startsWith('article-'))) {
+      slugInput.value = result.slug;
+    }
+
+    if (statusMsg) {
+      if (result.isFallback) {
+        statusMsg.style.background = 'rgba(245, 158, 11, 0.18)';
+        statusMsg.style.border = '1px solid rgba(245, 158, 11, 0.4)';
+        statusMsg.style.color = '#FDE68A';
+        statusMsg.innerHTML = `
+          ⚡ <strong>기본 구글 번역으로 자동 안전 전환 완료!</strong> (안내: ${result.fallbackReason || 'Gemini 응답 지연'})<br>
+          영문, 중문, 일문 3개 언어가 안전하게 번역되었습니다.
+          <span style="margin-left: 8px;">
+            <a href="#" id="link-goto-preview" style="color: #38BDF8; font-weight: 700; text-decoration: underline;">[👁️ 독자 화면 미리보기로 확인]</a>
+          </span>
+        `;
+        showToast({
+          title: "기본 구글 번역으로 자동 전환 완료",
+          message: "Gemini API 연동 지연으로 기본 구글 번역으로 즉시 전환되어 3개 언어 번역을 마쳤습니다.",
+          icon: "🌐",
+          duration: 4500
+        });
+      } else {
+        statusMsg.style.background = 'rgba(16, 185, 129, 0.15)';
+        statusMsg.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+        statusMsg.style.color = '#6EE7B7';
+        statusMsg.innerHTML = `
+          ✅ <strong>[${result.engine || 'AI'}] 번역 완료!</strong> 영문, 중문, 일문 3개 언어로 완벽히 번역되었습니다.
+          <span style="margin-left: 8px;">
+            <a href="#" id="link-goto-preview" style="color: #38BDF8; font-weight: 700; text-decoration: underline;">[👁️ 독자 화면 미리보기로 확인]</a>
+          </span>
+        `;
+        showToast({
+          title: `${result.engine || '번역'} 완료`,
+          message: "영문, 중문, 일문 번역본과 영문 URL 슬러그가 생성되었습니다. [미리보기] 탭에서 확인해보세요!",
+          icon: isGemini ? "✨" : "🌐"
+        });
+      }
+
+      document.getElementById('link-goto-preview')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.querySelector('[data-editor-lang="preview"]')?.click();
+      });
+    }
+  } catch (err) {
+    console.error("Translation error:", err);
+    if (statusMsg) {
+      statusMsg.style.background = 'rgba(239, 68, 68, 0.15)';
+      statusMsg.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+      statusMsg.style.color = '#FCA5A5';
+      statusMsg.innerHTML = `⚠️ 번역 중 일시적 오류가 발생했습니다: ${err.message}<br><span style="font-size: 0.8rem; color: #E2E8F0;">상단의 [🌐 기본 구글 번역] 버튼을 누르고 다시 시도하시면 API 키 없이 즉시 번역할 수 있습니다.</span>`;
+    }
+  } finally {
+    if (translateBtn) translateBtn.disabled = false;
+    if (icon) icon.innerHTML = isGemini ? '✨' : '🌐';
+    if (label) {
+      label.textContent = isGemini ? 'Gemini AI 자동 번역 실행' : '기본 구글 번역 실행';
+    }
+  }
+}
+
+function setupGeminiSettings() {
+  const openBtn = document.getElementById('btn-open-gemini-settings');
+  const linkOpen = document.getElementById('link-open-gemini-settings');
+  const modal = document.getElementById('modal-gemini-backdrop');
+  const closeBtn = document.getElementById('btn-close-gemini-modal');
+  const cancelBtn = document.getElementById('btn-cancel-gemini-modal');
+  const saveBtn = document.getElementById('btn-save-gemini-key');
+  const testBtn = document.getElementById('btn-test-gemini-key');
+  const keyInput = document.getElementById('gemini-key-input');
+  const toggleVisBtn = document.getElementById('btn-toggle-key-visibility');
+  const testResult = document.getElementById('gemini-test-result');
+
+  const radioGemini = document.getElementById('radio-choice-gemini');
+  const radioGoogle = document.getElementById('radio-choice-google');
+  const cardGemini = document.getElementById('card-choice-gemini');
+  const cardGoogle = document.getElementById('card-choice-google');
+  const chkAutoFallback = document.getElementById('chk-auto-fallback');
+
+  function openModal(e) {
+    if (e) e.preventDefault();
+    if (keyInput) keyInput.value = getGeminiApiKey();
+    if (testResult) testResult.style.display = 'none';
+
+    const preferred = getPreferredEngine();
+    if (radioGemini && radioGoogle) {
+      if (preferred === 'gemini') {
+        radioGemini.checked = true;
+        cardGemini?.classList.add('selected');
+        cardGoogle?.classList.remove('selected');
+      } else {
+        radioGoogle.checked = true;
+        cardGoogle?.classList.add('selected');
+        cardGemini?.classList.remove('selected');
+      }
+    }
+    if (chkAutoFallback) {
+      chkAutoFallback.checked = isAutoFallbackEnabled();
+    }
+
+    if (modal) modal.classList.add('open');
+  }
+
+  function closeModal() {
+    if (modal) modal.classList.remove('open');
+  }
+
+  if (openBtn) openBtn.addEventListener('click', openModal);
+  if (linkOpen) linkOpen.addEventListener('click', openModal);
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+
+  cardGemini?.addEventListener('click', () => {
+    if (radioGemini) radioGemini.checked = true;
+    cardGemini.classList.add('selected');
+    cardGoogle?.classList.remove('selected');
+  });
+
+  cardGoogle?.addEventListener('click', () => {
+    if (radioGoogle) radioGoogle.checked = true;
+    cardGoogle.classList.add('selected');
+    cardGemini?.classList.remove('selected');
+  });
+
+  if (toggleVisBtn && keyInput) {
+    toggleVisBtn.addEventListener('click', () => {
+      keyInput.type = keyInput.type === 'password' ? 'text' : 'password';
+    });
+  }
+
+  if (testBtn && keyInput && testResult) {
+    testBtn.addEventListener('click', async () => {
+      const val = keyInput.value.trim();
+      testResult.style.display = 'block';
+      testResult.style.background = 'rgba(56, 189, 248, 0.15)';
+      testResult.style.color = '#7DD3FC';
+      const currentModel = getActiveGeminiModel() || 'gemini-3.8-flash';
+      testResult.innerHTML = `🧪 Google Gemini (${currentModel}) 연결 확인 중...`;
+      testBtn.disabled = true;
+
+      const res = await testGeminiApiKey(val);
+      testBtn.disabled = false;
+
+      if (res.success) {
+        testResult.style.background = 'rgba(16, 185, 129, 0.2)';
+        testResult.style.color = '#6EE7B7';
+        testResult.innerHTML = `✅ <strong>연결 성공!</strong> ${res.message || `Google Gemini (${res.model || currentModel}) 모델이 정상 작동합니다.`}`;
+      } else {
+        testResult.style.background = 'rgba(239, 68, 68, 0.2)';
+        testResult.style.color = '#FCA5A5';
+        testResult.innerHTML = `❌ <strong>연결 실패:</strong> ${res.error}`;
+      }
+    });
+  }
+
+  if (saveBtn && keyInput) {
+    saveBtn.addEventListener('click', () => {
+      const val = keyInput.value.trim();
+      const chosenEngine = document.querySelector('input[name="modal-engine-radio"]:checked')?.value || 'gemini';
+      const fallbackEnabled = chkAutoFallback ? chkAutoFallback.checked : true;
+
+      setGeminiApiKey(val);
+      setPreferredEngine(chosenEngine);
+      setAutoFallbackEnabled(fallbackEnabled);
+
+      updateEngineSwitcherUI(chosenEngine);
+      updateGeminiStatusBadge();
+      closeModal();
+
+      const engineName = chosenEngine === 'gemini' 
+        ? `Google Gemini (${getActiveGeminiModel() || 'gemini-3.8-flash'})` 
+        : '기본 구글 번역 (Google Translate)';
+
+      showToast({
+        title: "번역 엔진 설정 저장 완료",
+        message: `선택된 엔진: ${engineName} | 자동 대체: ${fallbackEnabled ? '활성화' : '비활성화'}`,
+        icon: chosenEngine === 'gemini' ? "🤖" : "🌐"
+      });
+    });
+  }
+
+  updateGeminiStatusBadge();
+}
+
+function updateEngineSwitcherUI(chosenEngine) {
+  const engine = chosenEngine || getPreferredEngine();
+  const geminiBtn = document.getElementById('btn-engine-gemini');
+  const googleBtn = document.getElementById('btn-engine-google');
+  const bannerDesc = document.getElementById('translation-banner-desc');
+  const translateLabel = document.getElementById('translate-btn-label');
+  const activeModel = getActiveGeminiModel() || 'gemini-3.8-flash';
+  const autoFallback = isAutoFallbackEnabled();
+
+  if (geminiBtn && googleBtn) {
+    if (engine === 'gemini') {
+      geminiBtn.classList.add('active');
+      googleBtn.classList.remove('active');
+      if (bannerDesc) {
+        bannerDesc.innerHTML = `Google AI Studio의 최신 <strong>${activeModel}</strong> AI가 K-뷰티 매거진 스타일에 맞추어 고품질 영문·중문·일문 및 URL 슬러그를 자동 생성합니다. ${autoFallback ? '<span style="color:#6EE7B7;">(API 오류/지연 시 기본 구글 번역으로 자동 안전 전환)</span>' : ''}`;
+      }
+      if (translateLabel) translateLabel.textContent = 'Gemini AI 자동 번역 실행';
+    } else {
+      googleBtn.classList.add('active');
+      geminiBtn.classList.remove('active');
+      if (bannerDesc) {
+        bannerDesc.innerHTML = `<strong>기본 구글 번역(Google Translate)</strong>을 사용하여 별도 키 없이 즉시 한국어 원문을 영문·중문·일문으로 빠르게 번역합니다.`;
+      }
+      if (translateLabel) translateLabel.textContent = '기본 구글 번역 실행';
+    }
+  }
+
+  updateGeminiStatusBadge();
+}
+
+function updateGeminiStatusBadge() {
+  const dot = document.getElementById('gemini-status-dot');
+  const text = document.getElementById('gemini-status-text');
+  const badge = document.getElementById('gemini-engine-badge');
+  const isConfigured = hasGeminiApiKey();
+  const activeModel = getActiveGeminiModel() || 'gemini-3.8-flash';
+  const currentEngine = getPreferredEngine();
+
+  if (currentEngine === 'google') {
+    if (dot) dot.style.background = '#38BDF8';
+    if (text) text.textContent = '🌐 기본 구글 번역 활성';
+    if (badge) {
+      badge.textContent = '기본 구글 번역 (키 불필요)';
+      badge.style.background = 'rgba(56, 189, 248, 0.2)';
+      badge.style.color = '#7DD3FC';
+      badge.style.borderColor = 'rgba(56, 189, 248, 0.4)';
+    }
+  } else {
+    if (dot) {
+      dot.style.background = isConfigured ? '#10B981' : '#F59E0B';
+    }
+    if (text) {
+      text.textContent = isConfigured ? `🟢 ${activeModel} 활성` : '🤖 Gemini 키 미설정';
+    }
+    if (badge) {
+      if (isConfigured) {
+        badge.textContent = `Google Gemini (${activeModel}) 연동됨`;
+        badge.style.background = 'rgba(16, 185, 129, 0.2)';
+        badge.style.color = '#6EE7B7';
+        badge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+      } else {
+        badge.textContent = 'Google Gemini (키 미설정)';
+        badge.style.background = 'rgba(139, 92, 246, 0.15)';
+        badge.style.color = '#C4B5FD';
+        badge.style.borderColor = 'rgba(139, 92, 246, 0.3)';
+      }
+    }
+  }
+}
+
+function openArticleModal(articleId) {
+  const modal = document.getElementById('modal-article-backdrop');
+  const heading = document.getElementById('modal-article-title-heading');
+  const catSelect = document.getElementById('editor-category');
+  const statusMsg = document.getElementById('translation-status-msg');
+  if (statusMsg) statusMsg.style.display = 'none';
+
+  // Populate categories dropdown
+  const categories = getCategories();
+  catSelect.innerHTML = categories.map(c => `
+    <option value="${c.id}">${c.name?.en || c.id}</option>
+  `).join('');
+
+  if (articleId) {
+    const articles = getArticles();
+    editingArticle = articles.find(a => a.id === articleId);
+    heading.textContent = '에디토리얼 글 수정';
+    document.getElementById('btn-save-article-label').textContent = '변경사항 저장';
+  } else {
+    editingArticle = null;
+    heading.textContent = '새 에디토리얼 글 작성';
+    document.getElementById('btn-save-article-label').textContent = '새 글 발행하기';
+  }
+
+  // Populate form fields
+  if (editingArticle) {
+    document.getElementById('editor-slug').value = editingArticle.slug || editingArticle.id;
+    document.getElementById('editor-category').value = editingArticle.category || categories[0]?.id;
+    document.getElementById('editor-skintype').value = editingArticle.skinType || 'all';
+    document.getElementById('editor-readtime').value = editingArticle.readTime || 5;
+    document.getElementById('editor-featured').value = editingArticle.featured ? 'true' : 'false';
+    const statusSelect = document.getElementById('editor-status');
+    if (statusSelect) statusSelect.value = editingArticle.status || 'published';
+    document.getElementById('editor-cover').value = editingArticle.coverImage || '';
+
+    tempArticleLangData = {
+      ko: {
+        title: editingArticle.title?.ko || editingArticle.title?.en || '',
+        excerpt: editingArticle.excerpt?.ko || editingArticle.excerpt?.en || '',
+        content: editingArticle.content?.ko || editingArticle.content?.en || ''
+      },
+      en: {
+        title: editingArticle.title?.en || '',
+        excerpt: editingArticle.excerpt?.en || '',
+        content: editingArticle.content?.en || ''
+      },
+      zh: {
+        title: editingArticle.title?.zh || '',
+        excerpt: editingArticle.excerpt?.zh || '',
+        content: editingArticle.content?.zh || ''
+      },
+      ja: {
+        title: editingArticle.title?.ja || '',
+        excerpt: editingArticle.excerpt?.ja || '',
+        content: editingArticle.content?.ja || ''
+      }
+    };
+  } else {
+    document.getElementById('editor-slug').value = '';
+    document.getElementById('editor-category').value = categories[0]?.id || 'glass-skin';
+    document.getElementById('editor-skintype').value = 'all';
+    document.getElementById('editor-readtime').value = 5;
+    document.getElementById('editor-featured').value = 'false';
+    const statusSelect = document.getElementById('editor-status');
+    if (statusSelect) statusSelect.value = 'published';
+    document.getElementById('editor-cover').value = '/assets/images/glass-skin.jpg';
+
+    tempArticleLangData = {
+      ko: { title: '', excerpt: '', content: '' },
+      en: { title: '', excerpt: '', content: '' },
+      zh: { title: '', excerpt: '', content: '' },
+      ja: { title: '', excerpt: '', content: '' }
+    };
+  }
+
+  // Reset to Korean authoring subtab
+  currentEditorLang = 'ko';
+  currentPreviewLang = 'en';
+
+  document.querySelectorAll('[data-editor-lang]').forEach(b => {
+    b.classList.toggle('active', b.dataset.editorLang === 'ko');
+  });
+
+  const fieldsWrap = document.getElementById('editor-text-fields-wrap');
+  const previewContainer = document.getElementById('editor-preview-container');
+  const translationBanner = document.getElementById('translation-banner-box');
+
+  if (fieldsWrap) fieldsWrap.style.display = 'block';
+  if (previewContainer) previewContainer.style.display = 'none';
+  if (translationBanner) translationBanner.style.display = 'flex';
+
+  loadCurrentEditorLangFields();
+  updateEngineSwitcherUI();
+  modal.classList.add('open');
+}
+
+function closeArticleModal() {
+  const modal = document.getElementById('modal-article-backdrop');
+  if (modal) modal.classList.remove('open');
+  editingArticle = null;
+}
+
+function saveCurrentEditorLangFields() {
+  if (currentEditorLang === 'preview') return;
+
+  const title = document.getElementById('editor-title')?.value || '';
+  const excerpt = document.getElementById('editor-excerpt')?.value || '';
+  const content = document.getElementById('editor-content')?.value || '';
+
+  if (tempArticleLangData[currentEditorLang]) {
+    tempArticleLangData[currentEditorLang].title = title;
+    tempArticleLangData[currentEditorLang].excerpt = excerpt;
+    tempArticleLangData[currentEditorLang].content = content;
+  }
+}
+
+function loadCurrentEditorLangFields() {
+  const indicator = document.getElementById('editor-lang-indicator');
+  const hint = document.getElementById('editor-field-hint');
+
+  const langNames = {
+    ko: 'KO (한국어 원문 작성)',
+    en: 'EN (영문 번역본)',
+    zh: 'ZH (중문 번역본)',
+    ja: 'JA (일문 번역본)'
+  };
+
+  const hints = {
+    ko: '한국어 원문으로 내용을 편하게 작성하세요. 작성 후 아래 번역 버튼을 누르면 영문/중문/일문이 자동 생성됩니다.',
+    en: '영문 번역본입니다. 독자들에게 노출될 제목, 요약, 본문을 자유롭게 수정하거나 다듬을 수 있습니다.',
+    zh: '중문 번역본입니다. 필요에 따라 어휘나 문맥을 직접 수정할 수 있습니다.',
+    ja: '일문 번역본입니다. 필요에 따라 어휘나 문맥을 직접 수정할 수 있습니다.'
+  };
+
+  if (indicator) indicator.textContent = langNames[currentEditorLang] || currentEditorLang.toUpperCase();
+  if (hint) hint.textContent = hints[currentEditorLang] || '';
+
+  const titleInput = document.getElementById('editor-title');
+  const excerptInput = document.getElementById('editor-excerpt');
+  const contentInput = document.getElementById('editor-content');
+
+  const data = tempArticleLangData[currentEditorLang] || { title: '', excerpt: '', content: '' };
+  if (titleInput) titleInput.value = data.title || '';
+  if (excerptInput) excerptInput.value = data.excerpt || '';
+  if (contentInput) contentInput.value = data.content || '';
+}
+
+function renderLivePreview(lang) {
+  const categories = getCategories();
+  const catId = document.getElementById('editor-category')?.value;
+  const catObj = categories.find(c => c.id === catId);
+  const catName = catObj?.name?.[lang] || catObj?.name?.en || catId || 'K-Beauty';
+
+  const readTime = document.getElementById('editor-readtime')?.value || '5';
+  const coverImage = document.getElementById('editor-cover')?.value || '/assets/images/glass-skin.jpg';
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  const langData = tempArticleLangData[lang] || {};
+  const fallbackData = tempArticleLangData.ko || {};
+
+  const title = langData.title || fallbackData.title || '글 제목이 여기에 표시됩니다';
+  const excerpt = langData.excerpt || fallbackData.excerpt || '글 요약문이 여기에 표시됩니다. K-뷰티 루틴과 성분 분석을 확인해보세요.';
+  const content = langData.content || fallbackData.content || '### 본문 미리보기\n\n작성된 본문 내용이 마크다운으로 렌더링됩니다.';
+
+  // 1. 아티클 카드 뷰 렌더링
+  const prevCardImg = document.getElementById('prev-card-img');
+  const prevCardCat = document.getElementById('prev-card-cat');
+  const prevCardReadtime = document.getElementById('prev-card-readtime');
+  const prevCardDate = document.getElementById('prev-card-date');
+  const prevCardTitle = document.getElementById('prev-card-title');
+  const prevCardExcerpt = document.getElementById('prev-card-excerpt');
+
+  if (prevCardImg) prevCardImg.src = coverImage;
+  if (prevCardCat) prevCardCat.textContent = catName;
+  if (prevCardReadtime) prevCardReadtime.textContent = `${readTime} min read`;
+  if (prevCardDate) prevCardDate.textContent = todayStr;
+  if (prevCardTitle) prevCardTitle.textContent = title;
+  if (prevCardExcerpt) prevCardExcerpt.textContent = excerpt;
+
+  // 2. 개별 글 전용 페이지 뷰 렌더링
+  const prevReaderCat = document.getElementById('prev-reader-cat');
+  const prevReaderReadtime = document.getElementById('prev-reader-readtime');
+  const prevReaderTitle = document.getElementById('prev-reader-title');
+  const prevReaderImg = document.getElementById('prev-reader-img');
+  const prevReaderProse = document.getElementById('prev-reader-prose');
+
+  if (prevReaderCat) prevReaderCat.textContent = catName;
+  if (prevReaderReadtime) prevReaderReadtime.textContent = `${readTime} min read`;
+  if (prevReaderTitle) prevReaderTitle.textContent = title;
+  if (prevReaderImg) prevReaderImg.src = coverImage;
+  if (prevReaderProse) prevReaderProse.innerHTML = formatMarkdown(content);
+}
+
+function formatMarkdown(text) {
+  if (!text) return '<p style="color: #94A3B8;">본문 내용이 없습니다.</p>';
+  return text
+    .replace(/^### (.*$)/gim, '<h3 style="font-size: 1.15rem; font-weight: 700; margin-top: 18px; margin-bottom: 8px; color: #1C1917;">$1</h3>')
+    .replace(/^## (.*$)/gim, '<h2 style="font-size: 1.35rem; font-weight: 700; margin-top: 22px; margin-bottom: 10px; color: #1C1917;">$1</h2>')
+    .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+    .replace(/\*(.*)\*/gim, '<em>$1</em>')
+    .replace(/^• (.*$)/gim, '<li style="margin-left: 18px; margin-bottom: 4px; color: #44403C;">$1</li>')
+    .replace(/\n\n/gim, '</p><p style="margin-bottom: 12px; line-height: 1.7; color: #44403C;">');
+}
+
+/* =========================================================
+   2. 카테고리 관리 (Category Management)
+========================================================= */
+function renderCategoriesTable() {
+  const tbody = document.getElementById('categories-table-body');
+  if (!tbody) return;
+
+  const categories = getCategories();
+  const articles = getArticles();
+
+  if (categories.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="4" style="text-align: center; padding: 24px; color: #94A3B8;">
+          등록된 카테고리가 없습니다. 왼쪽 폼에서 카테고리를 추가해보세요.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = categories.map(cat => {
+    const count = articles.filter(a => a.category === cat.id).length;
+    return `
+      <tr>
+        <td>
+          <code style="background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 4px; color: #38BDF8;">${escapeHtml(cat.id)}</code>
+        </td>
+        <td>
+          <div style="font-weight: 600; color: #FFFFFF;">${escapeHtml(cat.name?.en || cat.id)}</div>
+          <div style="font-size: 0.78rem; color: #94A3B8; margin-top: 2px;">
+            중문: ${escapeHtml(cat.name?.zh || '-')} | 일문: ${escapeHtml(cat.name?.ja || '-')}
+          </div>
+        </td>
+        <td>
+          <span style="font-weight: 600; color: #CBD5E1;">${count}개 글</span>
+        </td>
+        <td style="text-align: right;">
+          <button class="btn-action-icon btn-delete-category" data-id="${cat.id}" style="color: #F87171;" title="카테고리 삭제">
+            삭제
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  tbody.querySelectorAll('.btn-delete-category').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const catId = btn.dataset.id;
+      if (confirm(`'${catId}' 카테고리를 삭제하시겠습니까?`)) {
+        deleteCategory(catId);
+        updateTopCounters();
+        renderCategoriesTable();
+        showToast({ title: "카테고리 삭제 완료", message: `'${catId}' 카테고리가 삭제되었습니다.` });
+      }
+    });
+  });
+}
+
+function setupCategoryForm() {
+  const form = document.getElementById('form-add-category');
+  if (!form) return;
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const id = document.getElementById('cat-new-id').value.trim().toLowerCase().replace(/\s+/g, '-');
+    const nameEn = document.getElementById('cat-new-name-en').value.trim();
+    const nameZh = document.getElementById('cat-new-name-zh').value.trim() || nameEn;
+    const nameJa = document.getElementById('cat-new-name-ja').value.trim() || nameEn;
+
+    if (!id || !nameEn) return;
+
+    saveCategory({
+      id,
+      name: { en: nameEn, zh: nameZh, ja: nameJa },
+      count: 0
+    });
+
+    form.reset();
+    updateTopCounters();
+    renderCategoriesTable();
+    showToast({ title: "카테고리 추가 완료", message: `'${nameEn}' 카테고리가 생성되었습니다.` });
+  });
+}
+
+/* =========================================================
+   3. 태그 관리 (Tag Management)
+========================================================= */
+function renderTagsChips() {
+  const container = document.getElementById('tags-chips-container');
+  if (!container) return;
+
+  const tags = getTags();
+
+  if (tags.length === 0) {
+    container.innerHTML = `<span style="color: #94A3B8; font-size: 0.9rem;">등록된 태그가 없습니다.</span>`;
+    return;
+  }
+
+  container.innerHTML = tags.map(tag => `
+    <div style="background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); color: #C084FC; padding: 6px 12px; border-radius: var(--radius-full); font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px;">
+      <span style="font-weight: 600;">${escapeHtml(tag)}</span>
+      <button class="btn-delete-tag" data-tag="${escapeHtml(tag)}" style="background: none; border: none; color: #E9D5FF; font-size: 0.85rem; cursor: pointer; padding: 0 2px;" title="태그 삭제">&times;</button>
+    </div>
+  `).join('');
+
+  container.querySelectorAll('.btn-delete-tag').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tag = btn.dataset.tag;
+      deleteTag(tag);
+      updateTopCounters();
+      renderTagsChips();
+      showToast({ title: "태그 삭제 완료", message: `'${tag}' 태그가 삭제되었습니다.` });
+    });
+  });
+}
+
+function setupTagForm() {
+  const form = document.getElementById('form-add-tag');
+  if (!form) return;
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const tagInput = document.getElementById('tag-new-input');
+    const val = tagInput.value.trim();
+    if (!val) return;
+
+    saveTag(val);
+    tagInput.value = '';
+    updateTopCounters();
+    renderTagsChips();
+    showToast({ title: "태그 추가 완료", message: `'${val}' 태그가 등록되었습니다.` });
+  });
+}
+
+/* =========================================================
+   4. 커뮤니티(게시판) 관리 (Community Moderation)
+========================================================= */
+function renderCommunityTable() {
+  const tbody = document.getElementById('community-table-body');
+  if (!tbody) return;
+
+  const posts = getCommunityPosts();
+
+  if (posts.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" style="text-align: center; padding: 28px; color: #94A3B8;">
+          현재 등록된 커뮤니티 게시글이 없습니다.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = posts.map(post => {
+    const repliesCount = (post.replies || []).length;
+    return `
+      <tr>
+        <td>
+          <div style="font-weight: 600; color: #FFFFFF;">${escapeHtml(post.author)}</div>
+          <div style="font-size: 0.78rem; color: #94A3B8;">${escapeHtml(post.country)}</div>
+        </td>
+        <td>
+          <span style="background: rgba(236, 72, 153, 0.15); color: #F472B6; padding: 3px 8px; border-radius: var(--radius-xs); font-size: 0.78rem; font-weight: 600;">
+            ${escapeHtml(post.category)}
+          </span>
+        </td>
+        <td style="max-width: 320px;">
+          <div style="font-weight: 600; color: #F8FAFC; font-size: 0.9rem; margin-bottom: 2px;">${escapeHtml(post.title)}</div>
+          <div style="font-size: 0.8rem; color: #94A3B8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(post.content)}</div>
+        </td>
+        <td style="color: #F472B6; font-weight: 600;">❤️ ${post.likes || 0}</td>
+        <td style="color: #CBD5E1;">💬 ${repliesCount}개</td>
+        <td style="color: #94A3B8; font-size: 0.8rem;">${post.date}</td>
+        <td style="text-align: right;">
+          <button class="btn-action-icon btn-delete-post" data-id="${post.id}" style="color: #F87171;" title="게시글 삭제">
+            삭제
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  tbody.querySelectorAll('.btn-delete-post').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const postId = btn.dataset.id;
+      if (confirm('이 커뮤니티 게시글을 삭제하시겠습니까?')) {
+        deleteCommunityPost(postId);
+        updateTopCounters();
+        renderCommunityTable();
+        showToast({ title: "게시글 삭제 완료", message: "커뮤니티 글이 삭제되었습니다." });
+      }
+    });
+  });
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}

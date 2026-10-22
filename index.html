@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>K-beuty Glow Edit | The Curated K-Beauty Journal & Community</title>
+  <meta name="description" content="Evidence-based Korean skincare guides, discussions, and tested glass skin routines directly from Seoul with exclusive Olive Young Global reader codes." />
+  <meta name="keywords" content="K-beuty Glow Edit, K-Beauty Blog, Korean Skincare Routines, Glass Skin, Korean Sunscreen, Olive Young Global, Community Forum" />
+  
+  <!-- Geo-Targeting Tags -->
+  <meta name="geo.region" content="KR-11" />
+  <meta name="geo.placename" content="Seoul, South Korea" />
+  <meta name="DC.title" content="K-beuty Glow Edit | Curated K-Beauty Intelligence" />
+  
+  <!-- Canonical & Multilingual Alternate Hreflang Tags -->
+  <link rel="canonical" href="https://kbeutyglowedit.com/" />
+  <link rel="alternate" hreflang="en" href="https://kbeutyglowedit.com/?hl=en" />
+  <link rel="alternate" hreflang="zh" href="https://kbeutyglowedit.com/?hl=zh" />
+  <link rel="alternate" hreflang="ja" href="https://kbeutyglowedit.com/?hl=ja" />
+  <link rel="alternate" hreflang="x-default" href="https://kbeutyglowedit.com/?hl=en" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>" />
+</head>
+<body>
+
+  <!-- Top Reader Privilege Bar -->
+  <div class="top-promo-bar" role="region" aria-label="Reader Exclusive Promotion">
+    <div class="promo-content">
+      <span class="promo-badge">READER PRIVILEGE</span>
+      <span data-i18n="promoBarText">K-BEUTY GLOW READERS: Use promo code</span>
+      <button class="promo-code-btn" id="promo-code-btn" title="Click to copy code">
+        <span>GLOW10</span>
+        <span style="font-size: 0.75rem;">📋</span>
+      </button>
+      <span data-i18n="promoBarDiscount">for an exclusive 10% OFF at Olive Young Global</span>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand-group">
+        <div class="brand-logo-mark" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+        </div>
+        <div class="brand-text-wrap">
+          <a href="/" class="brand-title" data-i18n="brandName">K-beuty Glow Edit</a>
+          <span class="brand-tagline" data-i18n="brandTagline">The Curated K-Beauty Journal & Skincare Intelligence</span>
+        </div>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="site-nav" aria-label="Main Navigation">
+        <a href="#stories" class="nav-link active" data-i18n="navStories">All Articles</a>
+        <a href="#community" class="nav-link" data-i18n="navCommunity">Community Forum</a>
+        <a href="#routine-builder" class="nav-link" data-i18n="navRoutineQuiz">Skincare Diagnostic</a>
+        <a href="#newsletter" class="nav-link" data-i18n="navNewsletter">Dispatch</a>
+      </nav>
+
+      <!-- Language & Currency & Admin Toggle -->
+      <div class="header-actions">
+        <!-- Language Switcher -->
+        <select class="selector-pill" id="lang-select" aria-label="Select Language">
+          <option value="en">🇺🇸 English</option>
+          <option value="zh">🇨🇳 简体中文</option>
+          <option value="ja">🇯🇵 日本語</option>
+        </select>
+
+        <!-- Currency Switcher -->
+        <select class="selector-pill" id="currency-select" aria-label="Select Currency">
+          <option value="USD">USD ($)</option>
+          <option value="JPY">JPY (¥)</option>
+          <option value="CNY">CNY (¥)</option>
+          <option value="KRW">KRW (₩)</option>
+          <option value="EUR">EUR (€)</option>
+        </select>
+
+        <!-- Direct Admin Button -->
+        <a href="/admin.html" class="admin-badge-btn" title="Open Admin Management Studio">
+          <span>⚙️</span>
+          <span data-i18n="adminStudio">Admin Studio</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Editorial Banner -->
+    <section class="hero-section" aria-labelledby="hero-heading">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <span class="hero-eyebrow">
+            <span>✨</span>
+            <span data-i18n="heroTag">Seoul Skincare Journal · Volume 2026</span>
+          </span>
+          <h1 id="hero-heading" class="hero-title" data-i18n="heroTitle">
+            Decoding Korean Skincare Science & Glass Skin Secrets
+          </h1>
+          <p class="hero-subtitle" data-i18n="heroSubtitle">
+            In-depth clinical guides, botanical ingredient analyses, and tested daily routines curated directly from Seoul's skincare capital.
+          </p>
+          <div class="hero-cta-group">
+            <a href="#stories" class="btn-primary">
+              <span data-i18n="heroCtaRead">Explore Latest Articles</span>
+              <span>↓</span>
+            </a>
+            <a href="#community" class="btn-secondary">
+              <span data-i18n="navCommunity">Community Forum</span>
+              <span>💬</span>
+            </a>
+          </div>
+          <div class="hero-verified-bar">
+            <span>🛡️</span>
+            <span data-i18n="heroVerifiedNotice">Researched & tested by skincare editors in Seoul. Official Olive Young Global affiliate partner.</span>
+          </div>
+        </div>
+
+        <div class="hero-media">
+          <div class="hero-media-wrapper">
+            <img src="/assets/images/hero-editorial.jpg" alt="Korean Luxury Skincare Routine Editorial" class="hero-media-img" />
+            <div class="hero-floating-card">
+              <div>
+                <div class="floating-stat-num">50+</div>
+                <div class="floating-stat-label">Clinical Formulations Tested</div>
+              </div>
+              <div>
+                <div class="floating-stat-num" style="color: var(--color-olive-young);">100%</div>
+                <div class="floating-stat-label">Editorial Independence</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters & Search Bar -->
+    <section class="filter-section" aria-label="Filters and Search">
+      <div class="filter-card">
+        <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+          <!-- Category Pills -->
+          <div class="category-pills-row" style="flex: 1;">
+            <button class="filter-pill active" data-category="all" data-i18n="filterAll">All Articles</button>
+            <button class="filter-pill" data-category="glass-skin" data-i18n="filterGlassSkin">Glass Skin Guides</button>
+            <button class="filter-pill" data-category="sun-care" data-i18n="filterSunCare">Sun Care Science</button>
+            <button class="filter-pill" data-category="awards" data-i18n="filterAwards">Seoul Trends & Awards</button>
+            <button class="filter-pill" data-category="trouble" data-i18n="filterTrouble">Barrier Repair & Calming</button>
+          </div>
+
+          <!-- Live Search Input -->
+          <div style="position: relative; min-width: 280px;">
+            <input type="text" id="search-input" 
+                   class="custom-select" 
+                   data-i18n-placeholder="searchPlaceholder" 
+                   placeholder="Search skincare routines, ingredients, guides..." 
+                   style="padding-left: 36px; padding-top: 8px; padding-bottom: 8px; font-size: 0.88rem;" />
+            <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--color-text-muted);">🔍</span>
+          </div>
+        </div>
+
+        <!-- Skin Type Concern Pills -->
+        <div class="skin-pills-row">
+          <span class="filter-label" data-i18n="skinTypeLabel">Filter by Skin Concern:</span>
+          <button class="filter-pill active" data-skintype="all" data-i18n="filterAll">All</button>
+          <button class="filter-pill" data-skintype="dry" data-i18n="skinDry">Dry & Dehydrated</button>
+          <button class="filter-pill" data-skintype="oily" data-i18n="skinOily">Oily & Acne-Prone</button>
+          <button class="filter-pill" data-skintype="sensitive" data-i18n="skinSensitive">Sensitive & Redness</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured Editorial Deep-Dive -->
+    <section class="featured-section" aria-labelledby="featured-story-title">
+      <div id="featured-story-wrap">
+        <!-- Rendered by user-app.js -->
+      </div>
+    </section>
+
+    <!-- Blog Articles Grid -->
+    <section class="articles-section" id="stories" aria-labelledby="stories-heading">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <h2 id="stories-heading" class="section-title" data-i18n="navStories">All Articles & Deep-Dives</h2>
+          <p class="section-subtitle">Click any article to read the full guide on its dedicated page.</p>
+        </div>
+      </div>
+      <div class="articles-grid" id="articles-grid">
+        <!-- Dynamic article cards -->
+      </div>
+    </section>
+
+    <!-- Community Forum & Discussions (게시판) -->
+    <section class="community-section" id="community" aria-labelledby="community-heading">
+      <div class="community-header-bar">
+        <div>
+          <span class="hero-eyebrow" style="margin-bottom: 6px;">
+            <span>💬</span>
+            <span data-i18n="communityBadge">Global Skincare Forum</span>
+          </span>
+          <h2 id="community-heading" class="section-title" data-i18n="communityTitle">K-Beauty Community Discussions</h2>
+          <p class="section-subtitle" data-i18n="communitySubtitle">Ask questions, troubleshoot your routine, and exchange holy grail discoveries with skincare lovers worldwide.</p>
+        </div>
+        <div>
+          <button class="btn-primary" id="btn-open-new-post">
+            <span data-i18n="askQuestionBtn">+ Start a Discussion</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Community New Post Form (Toggled) -->
+      <div class="community-new-post-modal" id="community-new-post-box">
+        <h3 style="font-family: var(--font-serif); font-size: 1.3rem; margin-bottom: 16px;" data-i18n="postModalTitle">Ask the K-Beauty Community</h3>
+        <form id="community-post-form">
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <input type="text" id="comm-post-title" class="custom-select" required data-i18n-placeholder="postModalTitlePlaceholder" placeholder="What's your question or holy grail discovery?" />
+            <select id="comm-post-category" class="custom-select">
+              <option value="Routine Advice">Routine Advice</option>
+              <option value="Holy Grail Reviews">Holy Grail Reviews</option>
+              <option value="Olive Young Haul">Olive Young Haul</option>
+              <option value="Ingredient Q&A">Ingredient Q&A</option>
+            </select>
+          </div>
+          <textarea id="comm-post-content" class="custom-select" rows="3" required data-i18n-placeholder="postModalContentPlaceholder" placeholder="Share details about your skin type, current routine, or question..." style="margin-bottom: 12px;"></textarea>
+          <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: center;">
+            <input type="text" id="comm-post-author" class="custom-select" required data-i18n-placeholder="postModalAuthorPlaceholder" placeholder="Your Name / Nickname" />
+            <input type="text" id="comm-post-country" class="custom-select" data-i18n-placeholder="postModalCountryPlaceholder" placeholder="Country (e.g. USA, UK, Japan)" />
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="btn-secondary" id="btn-cancel-post" style="padding: 10px 18px;">Cancel</button>
+              <button type="submit" class="btn-primary" style="padding: 10px 22px;" data-i18n="submitPostBtn">Publish</button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Community Category Filter Tabs -->
+      <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+        <button class="filter-pill active comm-filter-pill" data-comm-category="all" data-i18n="postCategoryAll">All Topics</button>
+        <button class="filter-pill comm-filter-pill" data-comm-category="Routine Advice" data-i18n="postCategoryAdvice">Routine Advice</button>
+        <button class="filter-pill comm-filter-pill" data-comm-category="Holy Grail Reviews" data-i18n="postCategoryReviews">Holy Grail Reviews</button>
+        <button class="filter-pill comm-filter-pill" data-comm-category="Olive Young Haul" data-i18n="postCategoryHaul">Olive Young Haul</button>
+      </div>
+
+      <!-- Community Posts List -->
+      <div class="community-posts-list" id="community-posts-list">
+        <!-- Rendered by user-app.js -->
+      </div>
+    </section>
+
+    <!-- Interactive Skincare Routine Diagnostic -->
+    <section class="routine-builder-section" id="routine-builder" aria-labelledby="routine-heading">
+      <div class="builder-box">
+        <span class="hero-eyebrow" style="margin-bottom: 12px;">
+          <span>🧪</span>
+          <span data-i18n="builderBadge">Personalized Diagnostic</span>
+        </span>
+        <h2 id="routine-heading" class="section-title" data-i18n="builderTitle">Find Your Ideal Korean Skincare Routine</h2>
+        <p class="section-subtitle" data-i18n="builderSubtitle">Select your skin type and primary target to reveal a dermatologist-structured daily regimen tested in Seoul.</p>
+        
+        <div class="builder-form-grid">
+          <div class="form-group">
+            <label for="routine-skin-select" data-i18n="step1Skin">Step 1: Your Skin Type</label>
+            <select id="routine-skin-select" class="custom-select">
+              <option value="dry" data-i18n="skinDry">Dry & Dehydrated</option>
+              <option value="oily" data-i18n="skinOily">Oily & Acne-Prone</option>
+              <option value="sensitive" data-i18n="skinSensitive">Sensitive & Redness</option>
+              <option value="combination" data-i18n="skinCombination">Combination Skin</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="routine-goal-select" data-i18n="step2Goal">Step 2: Primary Skin Goal</label>
+            <select id="routine-goal-select" class="custom-select">
+              <option value="glow" data-i18n="goalGlow">Glass Skin Radiance & Deep Hydration</option>
+              <option value="pores" data-i18n="goalPores">Pore Refining & Sebum Regulation</option>
+              <option value="calm" data-i18n="goalCalm">Redness Reduction & Barrier Recovery</option>
+              <option value="brighten" data-i18n="goalBrighten">Hyperpigmentation & Tone Evening</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="generate-routine-btn" style="width: 100%; justify-content: center; padding: 14px;">
+          <span data-i18n="generateRoutineBtn">Generate Recommended Regimen</span>
+          <span>⚡</span>
+        </button>
+
+        <div class="routine-results-container" id="routine-results-container">
+          <h3 style="font-family: var(--font-serif); font-size: 1.4rem; color: var(--color-text-main);" data-i18n="yourRoutineResults">
+            Your Prescribed Korean Routine
+          </h3>
+          <div class="routine-steps-grid" id="routine-steps-grid">
+            <!-- Dynamic steps -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Weekly Newsletter Dispatch -->
+    <section class="newsletter-section" id="newsletter" aria-labelledby="newsletter-heading">
+      <div class="newsletter-inner">
+        <span class="hero-eyebrow" style="background: rgba(255, 255, 255, 0.12); color: #FFF; border-color: rgba(255, 255, 255, 0.2);">
+          <span>💌</span>
+          <span data-i18n="newsletterBadge">Weekly Skincare Dispatch</span>
+        </span>
+        <h2 id="newsletter-heading" class="newsletter-title" data-i18n="newsletterTitle">Join 48,000+ Global K-Beauty Readers</h2>
+        <p class="newsletter-sub" data-i18n="newsletterSubtitle">Receive weekly dermatological breakdowns, Korean pharmacy discoveries, and verified Olive Young Global shopping recommendations directly to your inbox.</p>
+        
+        <form class="newsletter-form" id="newsletter-form">
+          <input type="email" id="newsletter-email" class="newsletter-input" required data-i18n-placeholder="newsletterInputPlaceholder" placeholder="Enter your email address..." />
+          <button type="submit" class="btn-primary" style="white-space: nowrap; padding: 14px 28px;">
+            <span data-i18n="subscribeBtn">Subscribe Free</span>
+          </button>
+        </form>
+        <span class="newsletter-disclaimer" data-i18n="newsletterDisclaimer">No spam. Unsubscribe anytime. High-value skincare insights only.</span>
+      </div>
+    </section>
+  </main>
+
+  <!-- Floating SEO & GEO Diagnostic Inspector Button -->
+  <button class="seo-fab" id="seo-diagnostics-fab" title="Inspect Live SEO, GEO and JSON-LD structured data">
+    <span>🌐</span>
+    <span data-i18n="seoDiagnostics">SEO & GEO Diagnostics</span>
+  </button>
+
+  <!-- SEO Diagnostics Drawer -->
+  <div class="seo-drawer" id="seo-drawer" role="region" aria-label="SEO and GEO Diagnostics Drawer">
+    <div class="seo-drawer-header">
+      <div style="font-weight: 700; color: var(--color-text-main); display: flex; align-items: center; gap: 8px;">
+        <span>🔍</span>
+        <span>SEO & GEO Optimization Inspector</span>
+      </div>
+      <button id="seo-drawer-close" style="font-size: 1.2rem; color: var(--color-text-secondary);">&times;</button>
+    </div>
+    <div class="seo-drawer-content" id="seo-inspector-data">
+      <!-- Live diagnostic details -->
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand-title" data-i18n="brandName">K-beuty Glow Edit</div>
+          <p class="footer-desc" data-i18n="footerAbout">
+            K-beuty Glow Edit is an independent digital publication curating the best of Korean skincare science, clinical ingredients, and Olive Young Global shopping recommendations.
+          </p>
+        </div>
+        <div>
+          <div class="footer-col-title" data-i18n="footerFastLinks">Quick Navigation</div>
+          <ul class="footer-links-list">
+            <li><a href="#stories" data-i18n="navStories">All Articles</a></li>
+            <li><a href="#community" data-i18n="navCommunity">Community Forum</a></li>
+            <li><a href="#routine-builder" data-i18n="navRoutineQuiz">Routine Diagnostic</a></li>
+            <li><a href="/admin.html" data-i18n="adminStudio">Admin Management Studio</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-col-title" data-i18n="footerLegal">Compliance & Legal</div>
+          <ul class="footer-links-list">
+            <li><a href="#" data-i18n="affiliateDisclosureFooter">Olive Young Affiliate Disclosure</a></li>
+            <li><a href="#" data-i18n="privacyPolicy">Privacy Policy</a></li>
+            <li><a href="#" data-i18n="termsOfUse">Terms of Service</a></li>
+            <li><span>Editorial ID: <code>glowseoul-aff</code></span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom-bar" data-i18n="allRightsReserved">
+        All rights reserved. K-beuty Glow Edit is an independent editorial publication. Olive Young is a trademark of CJ Olive Young Corp.
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="/src/scripts/main.js"></script>
+</body>
+</html>

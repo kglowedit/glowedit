@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>관리자 스튜디오 | K-beuty Glow Edit</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>" />
+  <script type="module" crossorigin src="/assets/admin-Mx963KzK.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/affiliate-Xnskpm3r.js">
+  <link rel="stylesheet" crossorigin href="/assets/affiliate-Be2WyEVG.css">
+  <link rel="stylesheet" crossorigin href="/assets/admin-wIY12tyA.css">
+</head>
+<body class="admin-layout">
+
+  <!-- 관리자 상단 네비게이션 -->
+  <header class="admin-navbar">
+    <div class="admin-brand">
+      <div style="font-size: 1.3rem;">🌸</div>
+      <div>
+        <span style="font-weight: 700; font-size: 1.1rem; color: #FFFFFF;">K-beuty Glow Edit 관리자 스튜디오</span>
+        <span class="admin-badge">콘텐츠 에디터</span>
+      </div>
+    </div>
+
+    <!-- 심플화된 4개 관리 탭 -->
+    <nav class="admin-nav-links" aria-label="관리자 탭 네비게이션">
+      <button class="admin-tab-btn active" data-tab="articles">
+        <span>📝</span>
+        <span>글 관리 & 새 글 작성</span>
+      </button>
+      <button class="admin-tab-btn" data-tab="categories">
+        <span>📂</span>
+        <span>카테고리 관리</span>
+      </button>
+      <button class="admin-tab-btn" data-tab="tags">
+        <span>🏷️</span>
+        <span>태그 관리</span>
+      </button>
+      <button class="admin-tab-btn" data-tab="community">
+        <span>💬</span>
+        <span>커뮤니티(게시판) 관리</span>
+      </button>
+    </nav>
+
+    <!-- 우측 유틸리티 -->
+    <div class="admin-user-pill">
+      <button class="btn-action-icon" id="btn-open-gemini-settings" title="Google Gemini API (AI Studio) 무료 API 키 설정">
+        <span id="gemini-status-dot" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #94A3B8; margin-right: 4px;"></span>
+        <span id="gemini-status-text">🤖 Gemini API 설정</span>
+      </button>
+      <button class="btn-action-icon" id="btn-reset-demo" title="데이터를 기본 데모 상태로 초기화합니다">
+        🔄 기본 데이터 복원
+      </button>
+      <a href="/" class="btn-view-site" target="_blank">
+        <span>블로그 사이트 보기</span>
+        <span>↗</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- 관리자 메인 컨텐츠 영역 -->
+  <main class="admin-content-area">
+
+    <!-- 간략한 현황 카운터 -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; margin-bottom: 28px;">
+      <div style="background: #1E293B; border: 1px solid #334155; border-radius: var(--radius-md); padding: 16px 20px;">
+        <div style="font-size: 0.8rem; color: #6EE7B7; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+          <span>🟢</span>
+          <span>발행된 글 (사이트 공개)</span>
+        </div>
+        <div style="font-size: 1.8rem; font-weight: 700; color: #F8FAFC; margin-top: 4px;" id="stat-published-count">0</div>
+      </div>
+      <div style="background: #1E293B; border: 1px solid #334155; border-radius: var(--radius-md); padding: 16px 20px;">
+        <div style="font-size: 0.8rem; color: #FCD34D; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+          <span>🟡</span>
+          <span>임시 저장 (비공개)</span>
+        </div>
+        <div style="font-size: 1.8rem; font-weight: 700; color: #FCD34D; margin-top: 4px;" id="stat-drafts-count">0</div>
+      </div>
+      <div style="background: #1E293B; border: 1px solid #334155; border-radius: var(--radius-md); padding: 16px 20px;">
+        <div style="font-size: 0.8rem; color: #94A3B8; font-weight: 600;">운영 중인 카테고리</div>
+        <div style="font-size: 1.8rem; font-weight: 700; color: #38BDF8; margin-top: 4px;" id="stat-categories-count">0</div>
+      </div>
+      <div style="background: #1E293B; border: 1px solid #334155; border-radius: var(--radius-md); padding: 16px 20px;">
+        <div style="font-size: 0.8rem; color: #94A3B8; font-weight: 600;">등록된 토픽 태그</div>
+        <div style="font-size: 1.8rem; font-weight: 700; color: #A855F7; margin-top: 4px;" id="stat-tags-count">0</div>
+      </div>
+      <div style="background: #1E293B; border: 1px solid #334155; border-radius: var(--radius-md); padding: 16px 20px;">
+        <div style="font-size: 0.8rem; color: #94A3B8; font-weight: 600;">글로벌 커뮤니티 게시글</div>
+        <div style="font-size: 1.8rem; font-weight: 700; color: #EC4899; margin-top: 4px;" id="stat-community-count">0</div>
+      </div>
+    </div>
+
+    <!-- 탭 1: 글 관리 & 새 글 작성 -->
+    <div class="admin-panel active" id="panel-articles">
+      <div class="admin-header-row">
+        <div>
+          <h1 class="admin-page-title">에디토리얼 글 관리</h1>
+          <p class="admin-page-sub">K-beuty Glow Edit의 블로그 콘텐츠를 작성, 편집하고 개별 URL로 발행합니다.</p>
+        </div>
+        <button class="btn-admin-primary" id="btn-open-article-modal">
+          <span>✍️</span>
+          <span>새 글 작성하기</span>
+        </button>
+      </div>
+
+      <div class="admin-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+          <!-- 글 상태 필터 탭 (전체 / 발행됨 / 임시 저장) -->
+          <div class="article-status-filter-group">
+            <button type="button" class="status-filter-btn active" data-status-filter="all">
+              전체 (<span id="count-filter-all">0</span>)
+            </button>
+            <button type="button" class="status-filter-btn" data-status-filter="published">
+              🟢 발행됨 (<span id="count-filter-published">0</span>)
+            </button>
+            <button type="button" class="status-filter-btn" data-status-filter="draft">
+              🟡 임시 저장 (<span id="count-filter-draft">0</span>)
+            </button>
+          </div>
+          <div style="font-size: 0.8rem; color: #94A3B8;">
+            💡 [🔒 비공개 전환]을 누르면 이미 발행된 글도 사이트에서 즉시 가려집니다.
+          </div>
+        </div>
+
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th style="width: 70px;">커버</th>
+                <th>제목 (영문 / 다국어)</th>
+                <th style="width: 105px;">상태</th>
+                <th>개별 URL (슬러그)</th>
+                <th>카테고리</th>
+                <th>조회수</th>
+                <th>작성일</th>
+                <th style="text-align: right; width: 230px;">관리</th>
+              </tr>
+            </thead>
+            <tbody id="articles-table-body">
+              <!-- admin-app.js에서 동적 렌더링 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 탭 2: 카테고리 관리 -->
+    <div class="admin-panel" id="panel-categories">
+      <div class="admin-header-row">
+        <div>
+          <h1 class="admin-page-title">카테고리 관리</h1>
+          <p class="admin-page-sub">사용자 페이지 및 글 작성 시 분류 기준으로 사용되는 카테고리를 관리합니다.</p>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1.6fr; gap: 24px;">
+        <!-- 새 카테고리 추가 카드 -->
+        <div class="admin-card">
+          <h2 class="card-title">새 카테고리 추가</h2>
+          <form id="form-add-category" style="display: flex; flex-direction: column; gap: 14px;">
+            <div class="admin-form-group">
+              <label class="admin-label">카테고리 ID / 슬러그 (영문 소문자 및 하이픈)</label>
+              <input type="text" id="cat-new-id" class="admin-input" placeholder="예: anti-aging, vegan-kbeauty" required />
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-label">영문 표시명 (EN)</label>
+              <input type="text" id="cat-new-name-en" class="admin-input" placeholder="예: Anti-Aging & Retinol" required />
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-label">중문 표시명 (ZH)</label>
+              <input type="text" id="cat-new-name-zh" class="admin-input" placeholder="예: 抗老与视黄醇" />
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-label">일문 표시명 (JA)</label>
+              <input type="text" id="cat-new-name-ja" class="admin-input" placeholder="예: エイジングケア・レチノール" />
+            </div>
+            <button type="submit" class="btn-admin-primary" style="margin-top: 8px;">
+              <span>+</span>
+              <span>카테고리 등록</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- 카테고리 목록 카드 -->
+        <div class="admin-card">
+          <h2 class="card-title">등록된 카테고리 목록</h2>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>슬러그</th>
+                  <th>표시명 (EN / ZH / JA)</th>
+                  <th>글 개수</th>
+                  <th style="text-align: right;">관리</th>
+                </tr>
+              </thead>
+              <tbody id="categories-table-body">
+                <!-- admin-app.js에서 렌더링 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 탭 3: 태그 관리 -->
+    <div class="admin-panel" id="panel-tags">
+      <div class="admin-header-row">
+        <div>
+          <h1 class="admin-page-title">태그 관리</h1>
+          <p class="admin-page-sub">글에 연결하여 검색과 탐색을 돕는 해시태그 목록을 관리합니다.</p>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1.6fr; gap: 24px;">
+        <!-- 새 태그 추가 카드 -->
+        <div class="admin-card">
+          <h2 class="card-title">새 태그 추가</h2>
+          <form id="form-add-tag" style="display: flex; flex-direction: column; gap: 14px;">
+            <div class="admin-form-group">
+              <label class="admin-label">태그명 (# 포함 또는 미포함)</label>
+              <input type="text" id="tag-new-input" class="admin-input" placeholder="예: #Centella, #TonerPad, #VitaminC" required />
+            </div>
+            <button type="submit" class="btn-admin-primary" style="margin-top: 8px;">
+              <span>+</span>
+              <span>태그 등록</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- 태그 목록 카드 -->
+        <div class="admin-card">
+          <h2 class="card-title">등록된 태그 목록</h2>
+          <div id="tags-chips-container" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px;">
+            <!-- admin-app.js에서 렌더링 -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 탭 4: 커뮤니티(게시판) 관리 -->
+    <div class="admin-panel" id="panel-community">
+      <div class="admin-header-row">
+        <div>
+          <h1 class="admin-page-title">커뮤니티(게시판) 글 관리</h1>
+          <p class="admin-page-sub">해외 독자들이 작성한 Q&A 및 토론 글을 검토하고 불필요한 글을 삭제 관리합니다.</p>
+        </div>
+        <a href="/#community" target="_blank" class="btn-view-site">
+          <span>사용자 게시판 열기 ↗</span>
+        </a>
+      </div>
+
+      <div class="admin-card">
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>작성자 / 국가</th>
+                <th>카테고리</th>
+                <th>제목 및 내용 요약</th>
+                <th>좋아요</th>
+                <th>댓글 수</th>
+                <th>작성일</th>
+                <th style="text-align: right;">관리</th>
+              </tr>
+            </thead>
+            <tbody id="community-table-body">
+              <!-- admin-app.js에서 렌더링 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 글 작성 / 수정 모달 -->
+  <div class="admin-modal-backdrop" id="modal-article-backdrop">
+    <div class="admin-modal-card">
+      <div class="admin-modal-header">
+        <h3 style="font-size: 1.2rem; font-weight: 700; color: #FFFFFF;" id="modal-article-title-heading">새 에디토리얼 글 작성</h3>
+        <button id="btn-close-article-modal" class="btn-action-icon" style="font-size: 1.2rem;">&times;</button>
+      </div>
+
+      <form id="form-article-editor" style="display: flex; flex-direction: column; overflow: hidden; height: 100%;">
+        <div class="admin-modal-body">
+
+          <!-- 기본 메타 정보 -->
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 16px;">
+            <div class="admin-form-group">
+              <label class="admin-label">URL 슬러그 (개별 글 주소: /article.html?slug=...)</label>
+              <div style="display: flex; gap: 8px;">
+                <input type="text" id="editor-slug" class="admin-input" style="flex: 1;" placeholder="예: korean-glass-skin-routine" required />
+                <button type="button" class="btn-action-icon" id="btn-auto-slug" title="영문 제목에서 슬러그 자동 생성">자동 생성</button>
+              </div>
+            </div>
+
+            <div class="admin-form-group">
+              <label class="admin-label">카테고리 분류</label>
+              <select id="editor-category" class="admin-select" required>
+                <!-- 동적으로 채워짐 -->
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1.2fr; gap: 16px;">
+            <div class="admin-form-group">
+              <label class="admin-label">피부 타입 타깃</label>
+              <select id="editor-skintype" class="admin-select">
+                <option value="all">모든 피부 타입 (All)</option>
+                <option value="dry">건성 / 탈수 피부 (Dry)</option>
+                <option value="oily">지성 / 여드름 피부 (Oily)</option>
+                <option value="sensitive">민감성 / 붉은기 피부 (Sensitive)</option>
+              </select>
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-label">읽는 시간 (분)</label>
+              <input type="number" id="editor-readtime" class="admin-input" value="5" min="1" max="60" />
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-label">메인 추천글 (Hero)</label>
+              <select id="editor-featured" class="admin-select">
+                <option value="false">일반 글</option>
+                <option value="true">헤더 추천 글 (Featured)</option>
+              </select>
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-label">발행 상태 (공개 여부)</label>
+              <select id="editor-status" class="admin-select" style="font-weight: 700; border-color: #38BDF8;">
+                <option value="published">🟢 발행 (사이트 즉시 공개)</option>
+                <option value="draft">🟡 임시 저장 (독자에게 비공개)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="admin-form-group">
+            <label class="admin-label">커버 이미지 경로 / URL</label>
+            <div style="display: flex; gap: 10px;">
+              <input type="text" id="editor-cover" class="admin-input" style="flex: 1;" value="/assets/images/glass-skin.jpg" required />
+              <select id="editor-preset-covers" class="admin-select" style="width: 220px;">
+                <option value="">대표 이미지 선택...</option>
+                <option value="/assets/images/glass-skin.jpg">Glass Skin (글래스 스킨)</option>
+                <option value="/assets/images/sunscreen-guide.jpg">Sunscreen Guide (선케어)</option>
+                <option value="/assets/images/oliveyoung-awards.jpg">Olive Young Awards (어워즈)</option>
+                <option value="/assets/images/hero-editorial.jpg">Hero Editorial (에디토리얼)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 다국어 탭 바 (한국어 원문, 영문 EN, 중문 ZH, 일문 JA, 실시간 미리보기) -->
+          <div style="margin-top: 10px;">
+            <div class="lang-subtabs">
+              <button type="button" class="lang-subtab-btn active" data-editor-lang="ko">🇰🇷 한국어 원문 (작성)</button>
+              <button type="button" class="lang-subtab-btn" data-editor-lang="en">🇺🇸 영문 (EN)</button>
+              <button type="button" class="lang-subtab-btn" data-editor-lang="zh">🇨🇳 중문 (ZH)</button>
+              <button type="button" class="lang-subtab-btn" data-editor-lang="ja">🇯🇵 일문 (JA)</button>
+              <button type="button" class="lang-subtab-btn preview-tab" data-editor-lang="preview">👁️ 독자 화면 실시간 미리보기</button>
+            </div>
+
+            <!-- 번역 실행 배너 (한국어 탭에서 표시) -->
+            <div class="translation-action-box" id="translation-banner-box">
+              <div class="translation-info-text" style="flex: 1;">
+                <div style="font-weight: 700; color: #FFFFFF; display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap;">
+                  <span>🌐</span>
+                  <span>번역 엔진:</span>
+                  <div class="engine-switch-group">
+                    <button type="button" class="engine-switch-btn active" id="btn-engine-gemini" data-engine-choice="gemini" title="Google Gemini 3.8 Flash (고품질 AI 번역)">
+                      🤖 Gemini AI (권장)
+                    </button>
+                    <button type="button" class="engine-switch-btn" id="btn-engine-google" data-engine-choice="google" title="기본 구글 번역 (무료/키 불필요)">
+                      🌐 기본 구글 번역
+                    </button>
+                  </div>
+                  <span id="gemini-engine-badge" style="font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; font-weight: 700; background: rgba(139, 92, 246, 0.25); color: #C4B5FD; border: 1px solid rgba(139, 92, 246, 0.4);">
+                    Google Gemini 3.8 Flash
+                  </span>
+                  <a href="#" id="link-open-gemini-settings" style="font-size: 0.75rem; color: #38BDF8; text-decoration: underline; font-weight: 600;">[엔진/API 설정]</a>
+                </div>
+                <div id="translation-banner-desc" style="font-size: 0.82rem; color: #CBD5E1; line-height: 1.5;">
+                  한국어로 제목·요약·본문을 작성하고 버튼을 누르면 Gemini 3.8 Flash AI가 K-뷰티 매거진 톤의 영문·중문·일문 및 URL 슬러그를 자동 생성합니다. (API 지연/오류 시 기본 구글 번역 자동 안전 전환)
+                </div>
+              </div>
+              <button type="button" id="btn-run-translation" class="btn-translate-ai">
+                <span id="translate-btn-icon">✨</span>
+                <span id="translate-btn-label">영문·중문·일문 자동 번역 실행</span>
+              </button>
+            </div>
+            <div id="translation-status-msg" style="display: none; margin-top: 8px; font-size: 0.85rem; padding: 10px 14px; border-radius: var(--radius-sm);"></div>
+
+            <!-- 텍스트 편집 영역 (KO, EN, ZH, JA) -->
+            <div id="editor-text-fields-wrap" style="margin-top: 14px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 0.82rem; color: #94A3B8;" id="editor-field-hint">
+                  한국어 원문으로 내용을 입력하세요.
+                </span>
+                <span style="background: rgba(236, 72, 153, 0.2); color: #F472B6; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;" id="editor-lang-indicator">
+                  KO (한국어)
+                </span>
+              </div>
+
+              <!-- 제목 -->
+              <div class="admin-form-group" style="margin-bottom: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <label class="admin-label">글 제목</label>
+                  <button type="button" class="btn-action-icon" id="btn-fill-sample-ko" style="font-size: 0.78rem; padding: 2px 8px; color: #38BDF8;" title="클릭 시 한국어 K-뷰티 샘플 원문이 채워집니다">
+                    💡 한국어 추천 예시 입력
+                  </button>
+                </div>
+                <input type="text" id="editor-title" class="admin-input" placeholder="글 제목을 입력하세요..." required />
+              </div>
+
+              <!-- 요약문 -->
+              <div class="admin-form-group" style="margin-bottom: 14px;">
+                <label class="admin-label">글 한 줄 요약 (블로그 카드 발췌문 및 메타 설명)</label>
+                <textarea id="editor-excerpt" class="admin-textarea" rows="2" placeholder="독자의 클릭을 유도할 핵심 요약을 입력하세요..."></textarea>
+              </div>
+
+              <!-- 본문 (마크다운) -->
+              <div class="admin-form-group">
+                <label class="admin-label">본문 내용 (마크다운 형식 지원 - ### 소제목, **볼드**, • 리스트 등)</label>
+                <textarea id="editor-content" class="admin-textarea" rows="11" placeholder="본문 내용을 입력하세요..." style="font-family: monospace; font-size: 0.88rem; line-height: 1.6;"></textarea>
+              </div>
+            </div>
+
+            <!-- 실시간 독자 화면 미리보기 영역 (preview 탭 클릭 시 표시) -->
+            <div id="editor-preview-container" class="preview-pane-wrap" style="display: none; margin-top: 14px;">
+              <div class="preview-header-bar">
+                <div style="font-weight: 600; color: #F8FAFC; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+                  <span>📱</span>
+                  <span>독자 페이지 실시간 시뮬레이션 미리보기</span>
+                </div>
+                <!-- 미리보기 언어 스위처 -->
+                <div style="display: flex; gap: 6px;" id="preview-lang-switchers">
+                  <button type="button" class="preview-lang-pill active" data-preview-lang="en">🇺🇸 English</button>
+                  <button type="button" class="preview-lang-pill" data-preview-lang="zh">🇨🇳 中文</button>
+                  <button type="button" class="preview-lang-pill" data-preview-lang="ja">🇯🇵 日本語</button>
+                  <button type="button" class="preview-lang-pill" data-preview-lang="ko">🇰🇷 한국어</button>
+                </div>
+              </div>
+
+              <!-- 미리보기 안내 뱃지 -->
+              <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.25); color: #7DD3FC; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 0.82rem;">
+                💡 선택한 언어로 독자에게 노출될 <strong>카드 형태</strong>와 <strong>개별 글 본문 페이지</strong>를 실시간으로 확인합니다.
+              </div>
+
+              <!-- 1. 블로그 카드 형태 미리보기 -->
+              <div>
+                <div style="font-size: 0.82rem; font-weight: 700; color: #94A3B8; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
+                  [미리보기 1] 메인 페이지 아티클 카드 뷰
+                </div>
+                <div style="max-width: 400px;">
+                  <article class="article-card" style="box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
+                    <div class="article-thumb-wrap">
+                      <img id="prev-card-img" src="/assets/images/glass-skin.jpg" alt="Preview" class="article-thumb" />
+                      <span class="category-tag-float" id="prev-card-cat">Glass Skin</span>
+                    </div>
+                    <div class="article-body">
+                      <div class="meta-row" style="font-size: 0.78rem;">
+                        <span id="prev-card-readtime">5 min read</span>
+                        <span>•</span>
+                        <span id="prev-card-date">2026-10-22</span>
+                      </div>
+                      <h3 class="article-title" id="prev-card-title" style="font-size: 1.05rem;">Title Preview</h3>
+                      <p class="article-snippet" id="prev-card-excerpt">Excerpt preview appears here...</p>
+                      <div class="article-footer">
+                        <span>1,240 reads</span>
+                        <span class="read-more-link">Read Full Guide →</span>
+                      </div>
+                    </div>
+                  </article>
+                </div>
+              </div>
+
+              <!-- 2. 개별 글 전용 페이지 뷰 -->
+              <div>
+                <div style="font-size: 0.82rem; font-weight: 700; color: #94A3B8; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
+                  [미리보기 2] 독자 개별 글 페이지 뷰 (/article.html)
+                </div>
+                <div class="simulated-reader-container">
+                  <div class="sim-meta-row">
+                    <span id="prev-reader-cat" style="background: rgba(236, 72, 153, 0.15); color: #EC4899; font-weight: 700; padding: 3px 8px; border-radius: 4px; font-size: 0.78rem;">Category</span>
+                    <span id="prev-reader-readtime">5 min read</span>
+                    <span>•</span>
+                    <span>Published by Editorial Team</span>
+                  </div>
+                  <h1 class="sim-article-title" id="prev-reader-title">Headline</h1>
+                  <img id="prev-reader-img" src="/assets/images/glass-skin.jpg" alt="Cover" class="sim-cover-img" />
+                  <div class="sim-prose-content" id="prev-reader-prose">
+                    <!-- 본문 마크다운 파싱 렌더링 -->
+                  </div>
+                  <!-- 올리브영 제휴 독자 혜택 바 -->
+                  <div class="sim-affiliate-banner">
+                    <div>
+                      <div style="font-weight: 700; color: #1C1917;">🎁 Reader Privilege: Olive Young Global 10% OFF</div>
+                      <div style="font-size: 0.78rem; color: #78716C;">Use promo code <strong>GLOW10</strong> at checkout on eligible orders.</div>
+                    </div>
+                    <span style="background: #EC4899; color: #FFFFFF; font-size: 0.78rem; font-weight: 700; padding: 6px 12px; border-radius: 4px;">GLOW10</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+        <div class="admin-modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+          <button type="button" class="btn-action-icon" id="btn-cancel-article-modal">취소</button>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" id="btn-save-as-draft" class="btn-action-icon" style="background: rgba(245, 158, 11, 0.15); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.35); font-weight: 600; padding: 10px 18px;">
+              <span>📁</span>
+              <span>임시 저장 (비공개)</span>
+            </button>
+            <button type="submit" class="btn-admin-primary" id="btn-submit-publish">
+              <span>🚀</span>
+              <span id="btn-save-article-label">발행하기 (사이트 공개)</span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 번역 엔진 및 Google Gemini API 설정 모달 -->
+  <div class="admin-modal-backdrop" id="modal-gemini-backdrop">
+    <div class="admin-modal-card" style="max-width: 600px;">
+      <div class="admin-modal-header">
+        <h3 style="font-size: 1.15rem; font-weight: 700; color: #FFFFFF; display: flex; align-items: center; gap: 8px;">
+          <span>🤖</span>
+          <span>다국어 번역 엔진 & Google Gemini API 설정</span>
+        </h3>
+        <button id="btn-close-gemini-modal" class="btn-action-icon" style="font-size: 1.2rem;">&times;</button>
+      </div>
+      <div class="admin-modal-body">
+        <!-- 기본 번역 엔진 선택 섹션 -->
+        <div class="admin-form-group">
+          <label class="admin-label">기본 사용할 번역 엔진 선택</label>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <label class="engine-choice-card selected" id="card-choice-gemini">
+              <input type="radio" name="modal-engine-radio" value="gemini" id="radio-choice-gemini" style="margin-top: 3px;" checked />
+              <div style="flex: 1;">
+                <div style="font-weight: 700; color: #FFFFFF; font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
+                  <span>🤖 Google Gemini AI (Gemini 3.8 Flash)</span>
+                  <span style="font-size: 0.72rem; padding: 1px 6px; border-radius: 4px; background: rgba(236, 72, 153, 0.2); color: #F472B6; font-weight: 700;">고품질 권장</span>
+                </div>
+                <div style="font-size: 0.8rem; color: #94A3B8; margin-top: 2px; line-height: 1.4;">
+                  K-뷰티 전문 매거진 톤과 자연스러운 어휘로 영어, 중국어, 일본어 번역 및 SEO 슬러그를 고품질 생성합니다. (Google AI Studio 무료 API 키 필요)
+                </div>
+              </div>
+            </label>
+
+            <label class="engine-choice-card" id="card-choice-google">
+              <input type="radio" name="modal-engine-radio" value="google" id="radio-choice-google" style="margin-top: 3px;" />
+              <div style="flex: 1;">
+                <div style="font-weight: 700; color: #FFFFFF; font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
+                  <span>🌐 기본 구글 번역 (Google Translate)</span>
+                  <span style="font-size: 0.72rem; padding: 1px 6px; border-radius: 4px; background: rgba(56, 189, 248, 0.2); color: #38BDF8; font-weight: 700;">키 불필요 / 100% 무료</span>
+                </div>
+                <div style="font-size: 0.8rem; color: #94A3B8; margin-top: 2px; line-height: 1.4;">
+                  별도 API 키 설정 없이 즉시 사용 가능한 구글 웹 번역입니다. Gemini 연동이 원활하지 않거나 간편한 글 작성을 원할 때 유용합니다.
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- 자동 안전 전환 옵션 (Auto-Fallback) -->
+        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 16px;">
+          <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; color: #6EE7B7; cursor: pointer; font-weight: 600;">
+            <input type="checkbox" id="chk-auto-fallback" style="margin-top: 3px;" checked />
+            <span>⚡ Gemini API 연동 지연/오류 발생 시 '기본 구글 번역'으로 자동 안전 전환</span>
+          </label>
+          <div style="font-size: 0.76rem; color: #94A3B8; margin-left: 24px; margin-top: 4px; line-height: 1.4;">
+            Gemini API 일일 할당량 초과, 인증 오류, 네트워크 지연 등이 발생하더라도 글 작성 작업이 중단되지 않고 즉시 기본 구글 번역으로 매끄럽게 번역을 완료합니다.
+          </div>
+        </div>
+
+        <!-- Gemini API Key 입력 -->
+        <div class="admin-form-group" id="gemini-key-section">
+          <label class="admin-label" style="display: flex; justify-content: space-between;">
+            <span>Gemini API Key (AIzaSy...)</span>
+            <span style="font-weight: normal; font-size: 0.75rem; color: #94A3B8;">Gemini AI 사용 시 필요</span>
+          </label>
+          <div style="display: flex; gap: 8px;">
+            <input type="password" id="gemini-key-input" class="admin-input" placeholder="AIzaSy..." style="flex: 1;" />
+            <button type="button" class="btn-action-icon" id="btn-toggle-key-visibility" title="키 표시/숨김">👁️</button>
+          </div>
+        </div>
+
+        <div id="gemini-test-result" style="display: none; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 0.85rem; margin-bottom: 14px;"></div>
+
+        <div style="background: #0F172A; border: 1px solid #334155; border-radius: var(--radius-sm); padding: 12px 14px; font-size: 0.8rem; color: #94A3B8; line-height: 1.5;">
+          <div style="font-weight: 700; color: #CBD5E1; margin-bottom: 4px;">💡 Gemini 무료 API 키 발급 방법 (선택 사항):</div>
+          <ol style="padding-left: 18px; margin: 0 0 6px 0;">
+            <li><a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: #38BDF8; font-weight: 700; text-decoration: underline;">Google AI Studio API Keys ↗</a> 접속 (카드 등록 불필요)</li>
+            <li><strong>Create API Key</strong> 누르고 키를 복사하여 위 입력창에 붙여넣기</li>
+          </ol>
+          <div style="color: #6EE7B7; font-size: 0.76rem;">✓ 무료 티어: 하루 1,500회 요청 무료 | 키는 브라우저 로컬 저장소에만 안전 보관</div>
+        </div>
+      </div>
+      <div class="admin-modal-footer">
+        <button type="button" class="btn-action-icon" id="btn-test-gemini-key">🧪 Gemini 키 테스트</button>
+        <button type="button" class="btn-action-icon" id="btn-cancel-gemini-modal">취소</button>
+        <button type="button" class="btn-admin-primary" id="btn-save-gemini-key">💾 설정 저장</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
