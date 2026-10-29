@@ -6,20 +6,14 @@
 import '../styles/tokens.css';
 import '../styles/main.css';
 import { copyPromoCode, handleAffiliateClick } from './affiliate.js';
-import { CURRENCIES, formatPrice, getArticles, getPublishedArticles, getProducts } from './data.js';
+import { getArticles, getPublishedArticles, getProducts } from './data.js';
 import { getLang, initLanguage, setLang, t, translations } from './i18n.js';
 import { updateHeadMetadata } from './seo.js';
 
-let currentCurrency = 'USD';
 let currentArticle = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   initLanguage();
-  const savedCurrency = localStorage.getItem('kbeauty_currency');
-  if (savedCurrency && CURRENCIES[savedCurrency]) {
-    currentCurrency = savedCurrency;
-  }
-
   setupArticleHeaderControls();
   loadAndRenderArticle();
 });
@@ -31,16 +25,6 @@ function setupArticleHeaderControls() {
     langSelect.addEventListener('change', (e) => {
       setLang(e.target.value);
       loadAndRenderArticle();
-    });
-  }
-
-  const currSelect = document.getElementById('currency-select');
-  if (currSelect) {
-    currSelect.value = currentCurrency;
-    currSelect.addEventListener('change', (e) => {
-      currentCurrency = e.target.value;
-      localStorage.setItem('kbeauty_currency', currentCurrency);
-      renderEmbeddedProducts();
     });
   }
 
@@ -175,14 +159,13 @@ function renderEmbeddedProducts() {
         ${articleProducts.map(p => {
           const pName = p.name[lang] || p.name.en;
           const pBadge = p.badge[lang] || p.badge.en;
-          const price = formatPrice(p.priceUSD, currentCurrency);
           return `
             <div style="background: #FFFFFF; border: 1px solid var(--color-card-border); border-radius: var(--radius-md); padding: 18px; display: grid; grid-template-columns: 88px 1fr auto; gap: 18px; align-items: center;">
               <img src="${p.image}" alt="${pName}" style="width: 88px; height: 88px; object-fit: contain; background: #FDFBFA; border-radius: var(--radius-xs); padding: 4px;" />
               <div>
                 <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-olive-young);">${p.brand} • ${pBadge}</div>
                 <div style="font-size: 1rem; font-weight: 600; color: var(--color-text-main); line-height: 1.35; margin: 3px 0;">${pName}</div>
-                <div style="font-size: 0.82rem; color: var(--color-text-muted);">Olive Young Global Ref: <strong>${price}</strong></div>
+                <div style="font-size: 0.8rem; color: var(--color-olive-young); font-weight: 500;">✓ Official Olive Young Global Store</div>
               </div>
               <div>
                 <a href="${p.oliveYoungUrl}" 

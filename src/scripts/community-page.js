@@ -7,7 +7,6 @@ import '../styles/tokens.css';
 import '../styles/main.css';
 import { copyPromoCode, PROMO_CODE, showToast } from './affiliate.js';
 import { 
-  CURRENCIES, 
   getCommunityPosts, 
   getAllCommunityPostsRaw,
   saveCommunityPost, 
@@ -90,15 +89,6 @@ function setupHeaderEvents() {
       if (activeDetailPostId) {
         openCommunityPostDetail(activeDetailPostId);
       }
-    });
-  }
-
-  const currencySelect = document.getElementById('currency-select');
-  if (currencySelect) {
-    const savedCurrency = localStorage.getItem('kbeauty_currency') || 'USD';
-    currencySelect.value = savedCurrency;
-    currencySelect.addEventListener('change', (e) => {
-      localStorage.setItem('kbeauty_currency', e.target.value);
     });
   }
 }

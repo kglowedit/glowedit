@@ -5,8 +5,6 @@
 
 import { buildOliveYoungUrl, copyPromoCode, handleAffiliateClick, PROMO_CODE, showToast } from './affiliate.js';
 import { 
-  CURRENCIES, 
-  formatPrice, 
   getArticles,
   getPublishedArticles, 
   getProducts, 
@@ -28,7 +26,6 @@ import { updateHeadMetadata } from './seo.js';
 let currentCategory = 'all';
 let currentSkinType = 'all';
 let searchQuery = '';
-let currentCurrency = 'USD';
 let currentCommCategory = 'all';
 let commSearchQuery = '';
 let commSortBy = 'latest';
@@ -39,12 +36,8 @@ let activeDetailPostId = null;
 let pendingPassAction = null;
 
 export function initUserApp() {
-  // 1. Language & Currency
+  // 1. Language
   const activeLang = initLanguage();
-  const savedCurrency = localStorage.getItem('kbeauty_currency');
-  if (savedCurrency && CURRENCIES[savedCurrency]) {
-    currentCurrency = savedCurrency;
-  }
 
   // 2. Wire up Header and Page controls
   setupHeaderEvents();
@@ -71,17 +64,6 @@ function setupHeaderEvents() {
       setLang(e.target.value);
       renderApp();
       refreshSeoMetadata();
-    });
-  }
-
-  // Currency selector
-  const currSelect = document.getElementById('currency-select');
-  if (currSelect) {
-    currSelect.value = currentCurrency;
-    currSelect.addEventListener('change', (e) => {
-      currentCurrency = e.target.value;
-      localStorage.setItem('kbeauty_currency', currentCurrency);
-      renderRoutineResults();
     });
   }
 
@@ -1203,7 +1185,6 @@ function generatePersonalizedRoutine() {
   stepsGrid.innerHTML = steps.map((s, idx) => {
     const p = s.product;
     const pName = p.name[lang] || p.name.en;
-    const price = formatPrice(p.priceUSD, currentCurrency);
     return `
       <div class="step-box">
         <span class="step-number">${s.title}</span>
@@ -1211,7 +1192,7 @@ function generatePersonalizedRoutine() {
         <img src="${p.image}" alt="${pName}" style="height: 130px; object-fit: contain; margin: 10px 0; border-radius: var(--radius-sm);" />
         <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-olive-young);">${p.brand}</div>
         <div style="font-size: 0.9rem; font-weight: 600; line-height: 1.35;">${pName}</div>
-        <div style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: auto;">Tested reference: ${price}</div>
+        <div style="font-size: 0.8rem; color: var(--color-olive-young); font-weight: 500; margin-top: auto;">✓ Olive Young Global Stock</div>
         <a href="${p.oliveYoungUrl}" class="btn-primary" data-product-id="${p.id}" data-url="${p.oliveYoungUrl}" style="padding: 8px 12px; font-size: 0.8rem; margin-top: 10px; border-radius: var(--radius-sm); justify-content: center; text-decoration: none;">
           ${t('viewOnOliveYoung')}
         </a>
