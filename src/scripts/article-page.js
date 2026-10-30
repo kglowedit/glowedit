@@ -75,15 +75,14 @@ function loadAndRenderArticle() {
       <div style="text-align: center; padding: 70px 20px; max-width: 600px; margin: 0 auto;">
         <div style="font-size: 3.5rem; margin-bottom: 16px;">🔒</div>
         <div style="display: inline-block; background: rgba(245, 158, 11, 0.15); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.35); padding: 4px 12px; border-radius: var(--radius-full); font-size: 0.8rem; font-weight: 700; margin-bottom: 14px;">
-          임시 저장 (비공개) 문서
+          비공개 문서
         </div>
         <h2 style="font-family: var(--font-serif); font-size: 1.8rem; margin-bottom: 12px; color: var(--color-text-main);">이 글은 현재 비공개 상태입니다</h2>
         <p style="color: var(--color-text-secondary); line-height: 1.6; margin-bottom: 24px;">
-          작성자가 글을 임시 저장하였거나 비공개 처리하여 일반 독자에게 노출되지 않습니다. 관리자 스튜디오에서 [발행] 상태로 변경하면 정상적으로 열람하실 수 있습니다.
+          해당 아티클은 현재 비공개 처리되었거나 준비 중인 콘텐츠로 일반 독자에게 열람이 제한되어 있습니다.
         </p>
         <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
           <a href="/" class="btn-secondary" style="padding: 10px 22px;">← 블로그 홈으로 이동</a>
-          <a href="/admin.html" class="btn-primary" style="padding: 10px 22px;">🛠️ 관리자 스튜디오로 이동</a>
         </div>
       </div>
     `;
