@@ -33,8 +33,10 @@ import {
   getPromoSettings,
   savePromoSettings,
   resetPromoSettings,
-  DEFAULT_PROMO_SETTINGS
+  DEFAULT_PROMO_SETTINGS,
+  getProducts
 } from './data.js';
+import { generateStructuredData } from './seo.js';
 import { 
   translateFullArticle, 
   generateSlug,
@@ -75,6 +77,7 @@ export function initAdminApp() {
   setupCategoryForm();
   setupTagForm();
   setupGeminiSettings();
+  setupSeoDiagnosticsModal();
   setupResetDemo();
   setupPromotionsModule();
 }
@@ -804,6 +807,141 @@ function setupGeminiSettings() {
   }
 
   updateGeminiStatusBadge();
+}
+
+function setupSeoDiagnosticsModal() {
+  const openBtn = document.getElementById('btn-open-seo-settings');
+  const modal = document.getElementById('modal-seo-backdrop');
+  const closeBtn = document.getElementById('btn-close-seo-modal');
+  const closeFooterBtn = document.getElementById('btn-close-seo-modal-footer');
+  const contentArea = document.getElementById('admin-seo-modal-content');
+  const copyBtn = document.getElementById('btn-copy-seo-jsonld');
+
+  if (!openBtn || !modal) return;
+
+  function renderSeoDiagnostics() {
+    if (!contentArea) return;
+    const origin = window.location.origin;
+    const canonicalUrl = origin + '/';
+
+    const schemaData = generateStructuredData({
+      url: canonicalUrl,
+      title: "Seoul Glow Edit | Curated K-Beauty & Olive Young Global Guide",
+      description: "Curated Korean skincare editorial, routine guides, and Olive Young Global shopping recommendations.",
+      lang: "en",
+      products: getProducts()
+    });
+
+    const jsonLdString = JSON.stringify(schemaData, null, 2);
+
+    contentArea.innerHTML = `
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <!-- 상단 핵심 지표 그리드 -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px;">
+          <div style="background: #0F172A; border: 1px solid #334155; padding: 14px; border-radius: 8px;">
+            <div style="font-size: 0.72rem; color: #94A3B8; font-weight: 700; letter-spacing: 0.05em;">CANONICAL DOMAIN</div>
+            <div style="font-size: 0.92rem; color: #38BDF8; font-weight: 700; margin-top: 4px; word-break: break-all;">${canonicalUrl}</div>
+          </div>
+          <div style="background: #0F172A; border: 1px solid #334155; padding: 14px; border-radius: 8px;">
+            <div style="font-size: 0.72rem; color: #94A3B8; font-weight: 700; letter-spacing: 0.05em;">ROBOTS META</div>
+            <div style="font-size: 0.92rem; color: #34D399; font-weight: 700; margin-top: 4px;">index, follow (사용자)</div>
+          </div>
+          <div style="background: #0F172A; border: 1px solid #334155; padding: 14px; border-radius: 8px;">
+            <div style="font-size: 0.72rem; color: #94A3B8; font-weight: 700; letter-spacing: 0.05em;">GEO REGION</div>
+            <div style="font-size: 0.92rem; color: #F472B6; font-weight: 700; margin-top: 4px;">KR-11 (Seoul, Global)</div>
+          </div>
+          <div style="background: #0F172A; border: 1px solid #334155; padding: 14px; border-radius: 8px;">
+            <div style="font-size: 0.72rem; color: #94A3B8; font-weight: 700; letter-spacing: 0.05em;">SCHEMA TYPES</div>
+            <div style="font-size: 0.92rem; color: #FBBF24; font-weight: 700; margin-top: 4px;">WebSite, Org, Product</div>
+          </div>
+        </div>
+
+        <!-- Google SERP 검색 결과 미리보기 -->
+        <div style="background: #0F172A; border: 1px solid #334155; padding: 16px; border-radius: 8px;">
+          <div style="font-size: 0.85rem; font-weight: 700; color: #E2E8F0; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+            <span>🔍 Google 검색 결과(SERP Snippet) 시뮬레이션</span>
+          </div>
+          <div style="background: #FFFFFF; color: #202124; padding: 16px; border-radius: 8px; font-family: Roboto, -apple-system, sans-serif;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+              <span style="font-size: 1.1rem;">🌸</span>
+              <div style="font-size: 0.82rem; color: #202124; line-height: 1.2;">
+                <div style="font-weight: 600;">Seoul Glow Edit</div>
+                <div style="color: #4d5156; font-size: 0.75rem;">${canonicalUrl}</div>
+              </div>
+            </div>
+            <div style="color: #1a0dab; font-size: 1.12rem; font-weight: 500; cursor: pointer; line-height: 1.3; margin-bottom: 4px;">
+              Seoul Glow Edit | Curated K-Beauty & Olive Young Global Guide
+            </div>
+            <div style="color: #4d5156; font-size: 0.84rem; line-height: 1.4;">
+              Independent Seoul beauty intelligence, clinical Korean skincare routines, glass skin secrets, and Olive Young Global holy grail recommendations.
+            </div>
+          </div>
+        </div>
+
+        <!-- Hreflang 및 지역 태그 -->
+        <div style="background: #0F172A; border: 1px solid #334155; padding: 16px; border-radius: 8px;">
+          <div style="font-size: 0.85rem; font-weight: 700; color: #E2E8F0; margin-bottom: 8px;">
+            🌐 Hreflang 다국어 타겟팅 & GEO 메타 태그
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; font-size: 0.82rem; color: #94A3B8;">
+            <div>
+              <div style="color: #F8FAFC; font-weight: 600; margin-bottom: 4px;">Hreflang 링크 설정</div>
+              <div>• <code>en</code>: ${canonicalUrl}?hl=en</div>
+              <div>• <code>zh</code>: ${canonicalUrl}?hl=zh</div>
+              <div>• <code>ja</code>: ${canonicalUrl}?hl=ja</div>
+              <div>• <code>x-default</code>: ${canonicalUrl}?hl=en</div>
+            </div>
+            <div>
+              <div style="color: #F8FAFC; font-weight: 600; margin-bottom: 4px;">Geo 지역 타겟 태그</div>
+              <div>• <code>geo.region</code>: KR-11 (Seoul)</div>
+              <div>• <code>geo.placename</code>: Seoul, South Korea</div>
+              <div>• <code>target market</code>: Global (US, Japan, Greater China)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 실시간 Schema.org JSON-LD -->
+        <div style="background: #0F172A; border: 1px solid #334155; padding: 16px; border-radius: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="font-size: 0.85rem; font-weight: 700; color: #E2E8F0;">
+              📜 실시간 Schema.org JSON-LD 구조화 데이터
+            </div>
+            <span style="font-size: 0.72rem; color: #34D399; font-weight: 600;">✓ Schema.org 표준 준수</span>
+          </div>
+          <pre id="admin-seo-jsonld-code" style="background: #020617; color: #38BDF8; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 0.76rem; max-height: 220px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; border: 1px solid #1E293B;">${jsonLdString}</pre>
+        </div>
+      </div>
+    `;
+  }
+
+  openBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    renderSeoDiagnostics();
+    modal.classList.add('open');
+  });
+
+  const closeModal = () => modal.classList.remove('open');
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (closeFooterBtn) closeFooterBtn.addEventListener('click', closeModal);
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  if (copyBtn) {
+    copyBtn.addEventListener('click', () => {
+      const codeEl = document.getElementById('admin-seo-jsonld-code');
+      if (codeEl) {
+        navigator.clipboard.writeText(codeEl.textContent).then(() => {
+          showToast({
+            title: "복사 완료",
+            message: "Schema.org JSON-LD 구조화 데이터가 클립보드에 복사되었습니다.",
+            icon: "📋"
+          });
+        });
+      }
+    });
+  }
 }
 
 function updateEngineSwitcherUI(chosenEngine) {

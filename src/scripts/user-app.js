@@ -86,22 +86,6 @@ function setupHeaderEvents() {
     });
   }
 
-  // SEO Diagnostics Toggle
-  const seoFab = document.getElementById('seo-diagnostics-fab');
-  const seoDrawer = document.getElementById('seo-drawer');
-  const seoCloseBtn = document.getElementById('seo-drawer-close');
-  if (seoFab && seoDrawer) {
-    seoFab.addEventListener('click', () => {
-      seoDrawer.classList.toggle('open');
-      if (seoDrawer.classList.contains('open')) {
-        updateSeoInspector();
-      }
-    });
-  }
-  if (seoCloseBtn && seoDrawer) {
-    seoCloseBtn.addEventListener('click', () => seoDrawer.classList.remove('open'));
-  }
-
   // Category & Skin Filter Buttons
   document.querySelectorAll('.filter-pill[data-category]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1231,44 +1215,6 @@ function refreshSeoMetadata() {
     description: descMap[lang] || descMap.en,
     products: getProducts()
   });
-}
-
-function updateSeoInspector() {
-  const container = document.getElementById('seo-inspector-data');
-  if (!container) return;
-
-  const lang = getLang();
-  const canonicalUrl = window.location.origin + window.location.pathname;
-  const jsonLdScript = document.getElementById('seo-json-ld');
-  const structuredDataText = jsonLdScript ? jsonLdScript.textContent : 'Generating...';
-
-  container.innerHTML = `
-    <div>
-      <strong>Active Language:</strong> <code>${lang}</code>
-    </div>
-    <div>
-      <strong>Canonical Tag:</strong> <code>${canonicalUrl}</code>
-    </div>
-    <div>
-      <strong>Hreflang Targets:</strong>
-      <ul style="padding-left: 20px; margin-top: 6px;">
-        <li><code>en</code>: ${canonicalUrl}?hl=en</li>
-        <li><code>zh</code>: ${canonicalUrl}?hl=zh</li>
-        <li><code>ja</code>: ${canonicalUrl}?hl=ja</li>
-        <li><code>x-default</code>: ${canonicalUrl}?hl=en</li>
-      </ul>
-    </div>
-    <div>
-      <strong>Geo Meta Tags:</strong>
-      <div style="margin-top: 4px;"><code>geo.region: KR-11 (Seoul)</code></div>
-      <div><code>geo.placename: Seoul, South Korea</code></div>
-      <div><code>target market: Global (US, Japan, China, Southeast Asia)</code></div>
-    </div>
-    <div>
-      <strong>Live Schema.org JSON-LD Output:</strong>
-      <pre class="seo-code-box">${structuredDataText}</pre>
-    </div>
-  `;
 }
 
 function getCategoryLabel(cat) {
