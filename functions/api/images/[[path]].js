@@ -4,6 +4,14 @@
  */
 
 export async function onRequestGet(context) {
+  return handleImageRequest(context, false);
+}
+
+export async function onRequestHead(context) {
+  return handleImageRequest(context, true);
+}
+
+async function handleImageRequest(context, isHeadOnly = false) {
   const { request, params, env } = context;
 
   const corsHeaders = {
@@ -50,7 +58,7 @@ export async function onRequestGet(context) {
     headers.set('Cache-Control', 'public, max-age=31536000, immutable');
     headers.set('Access-Control-Allow-Origin', '*');
 
-    return new Response(object.body, {
+    return new Response(isHeadOnly ? null : object.body, {
       headers
     });
 
