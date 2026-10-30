@@ -1,3 +1,8 @@
 name = "kglowedit"
 pages_build_output_dir = "dist"
 compatibility_date = "2026-10-30"
+
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "kglowedit-images"
+

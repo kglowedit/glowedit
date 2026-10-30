@@ -268,6 +268,10 @@ function formatMarkdown(text) {
   return text
     .replace(/^### (.*$)/gim, '<h3>$1</h3>')
     .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+    .replace(/!\[(.*?)\]\((.*?)\)/gim, (match, alt, url) => {
+      const figCaption = alt ? `<figcaption class="article-body-figcaption">${alt}</figcaption>` : '';
+      return `</p><figure class="article-body-figure"><img src="${url}" alt="${alt || 'K-Glow Editorial'}" class="article-body-inline-img" loading="lazy" />${figCaption}</figure><p>`;
+    })
     .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
     .replace(/\*(.*)\*/gim, '<em>$1</em>')
     .replace(/\n\n/gim, '</p><p>')

@@ -56,6 +56,7 @@ let currentArticleStatusFilter = 'all'; // 'all' | 'published' | 'draft'
 let editingArticle = null;
 let currentEditorLang = 'ko'; // 기본 작성 언어: 한국어
 let currentPreviewLang = 'en'; // 기본 미리보기 언어: 영문
+let uploadedArticleImages = []; // Cloudflare R2 uploaded images collection
 
 let tempArticleLangData = {
   ko: { title: '', excerpt: '', content: '' },
@@ -370,12 +371,34 @@ function setupArticleEditor() {
     presetCovers.addEventListener('change', (e) => {
       if (e.target.value) {
         document.getElementById('editor-cover').value = e.target.value;
+        uploadedArticleImages.forEach(img => {
+          img.isCover = (img.url === e.target.value);
+        });
+        renderR2Gallery();
         if (currentEditorLang === 'preview') {
           renderLivePreview(currentPreviewLang);
         }
       }
     });
   }
+
+  // Cover input manual change sync
+  const coverInput = document.getElementById('editor-cover');
+  if (coverInput) {
+    coverInput.addEventListener('input', () => {
+      const val = coverInput.value.trim();
+      uploadedArticleImages.forEach(img => {
+        img.isCover = (img.url === val);
+      });
+      renderR2Gallery();
+      if (currentEditorLang === 'preview') {
+        renderLivePreview(currentPreviewLang);
+      }
+    });
+  }
+
+  // Initialize Cloudflare R2 Uploader and Gallery
+  setupR2Uploader();
 
   // Quick Korean sample fill helper
   const fillSampleBtn = document.getElementById('btn-fill-sample-ko');
@@ -1107,6 +1130,46 @@ function openArticleModal(articleId) {
 
   loadCurrentEditorLangFields();
   updateEngineSwitcherUI();
+
+  // Populate R2 images gallery
+  uploadedArticleImages = [];
+  if (editingArticle) {
+    const existingUrls = new Set();
+    if (editingArticle.coverImage) {
+      existingUrls.add(editingArticle.coverImage);
+      uploadedArticleImages.push({
+        id: `cover_${editingArticle.id}`,
+        url: editingArticle.coverImage,
+        name: '대표 커버 사진',
+        size: 0,
+        isCover: true,
+        storage: 'r2'
+      });
+    }
+
+    // Extract all markdown images from all languages content
+    ['ko', 'en', 'zh', 'ja'].forEach(l => {
+      const cnt = editingArticle.content?.[l] || '';
+      const matches = cnt.matchAll(/!\[(.*?)\]\((.*?)\)/g);
+      for (const match of matches) {
+        const alt = match[1];
+        const url = match[2];
+        if (url && !existingUrls.has(url)) {
+          existingUrls.add(url);
+          uploadedArticleImages.push({
+            id: `body_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+            url: url,
+            name: alt || '본문 삽입 사진',
+            size: 0,
+            isCover: (url === editingArticle.coverImage),
+            storage: 'r2'
+          });
+        }
+      }
+    });
+  }
+  renderR2Gallery();
+
   modal.classList.add('open');
 }
 
@@ -1114,6 +1177,8 @@ function closeArticleModal() {
   const modal = document.getElementById('modal-article-backdrop');
   if (modal) modal.classList.remove('open');
   editingArticle = null;
+  uploadedArticleImages = [];
+  renderR2Gallery();
 }
 
 function saveCurrentEditorLangFields() {
@@ -1212,10 +1277,287 @@ function formatMarkdown(text) {
   return text
     .replace(/^### (.*$)/gim, '<h3 style="font-size: 1.15rem; font-weight: 700; margin-top: 18px; margin-bottom: 8px; color: #1C1917;">$1</h3>')
     .replace(/^## (.*$)/gim, '<h2 style="font-size: 1.35rem; font-weight: 700; margin-top: 22px; margin-bottom: 10px; color: #1C1917;">$1</h2>')
+    .replace(/!\[(.*?)\]\((.*?)\)/gim, (match, alt, url) => {
+      const figCaption = alt ? `<figcaption class="article-body-figcaption">${alt}</figcaption>` : '';
+      return `</p><figure class="article-body-figure"><img src="${url}" alt="${alt || 'K-Glow Editorial'}" class="article-body-inline-img" style="max-width: 100%; border-radius: 8px;" loading="lazy" />${figCaption}</figure><p style="margin-bottom: 12px; line-height: 1.7; color: #44403C;">`;
+    })
     .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
     .replace(/\*(.*)\*/gim, '<em>$1</em>')
     .replace(/^• (.*$)/gim, '<li style="margin-left: 18px; margin-bottom: 4px; color: #44403C;">$1</li>')
     .replace(/\n\n/gim, '</p><p style="margin-bottom: 12px; line-height: 1.7; color: #44403C;">');
+}
+
+/* =========================================================
+   Cloudflare R2 Image Uploader & Gallery Manager
+========================================================= */
+function setupR2Uploader() {
+  const dropzone = document.getElementById('r2-dropzone');
+  const fileInput = document.getElementById('r2-file-input');
+  const quickInsertBtn = document.getElementById('btn-quick-insert-photo');
+
+  if (dropzone && fileInput) {
+    dropzone.addEventListener('click', () => {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files || []);
+      if (files.length > 0) {
+        handleImageUploadFiles(files);
+      }
+      fileInput.value = '';
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.remove('dragover');
+      });
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const files = Array.from(dt.files || []).filter(f => f.type.startsWith('image/'));
+      if (files.length > 0) {
+        handleImageUploadFiles(files);
+      } else {
+        showToast({ title: '업로드 오류', message: '이미지 파일(JPG, PNG, WEBP 등)만 업로드할 수 있습니다.' });
+      }
+    });
+  }
+
+  // Quick insert photo button above textarea
+  if (quickInsertBtn) {
+    quickInsertBtn.addEventListener('click', () => {
+      if (uploadedArticleImages.length === 0) {
+        showToast({
+          title: '사진 업로드 필요',
+          message: '먼저 상단의 드롭존을 클릭하여 사진을 업로드해주세요.'
+        });
+        const dz = document.getElementById('r2-dropzone');
+        if (dz) dz.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      // If only 1 image, insert directly
+      if (uploadedArticleImages.length === 1) {
+        const img = uploadedArticleImages[0];
+        insertImageAtCursor(img.url, img.name);
+        return;
+      }
+
+      // If multiple, show quick dialog / prompt or insert chosen
+      const titles = uploadedArticleImages.map((img, idx) => `${idx + 1}. ${img.name || '사진'}`).join('\n');
+      const pick = prompt(`본문 커서 위치에 배치할 사진 번호를 선택하세요 (1~${uploadedArticleImages.length}):\n\n${titles}`, '1');
+      if (pick) {
+        const idx = parseInt(pick, 10) - 1;
+        if (idx >= 0 && idx < uploadedArticleImages.length) {
+          const chosen = uploadedArticleImages[idx];
+          insertImageAtCursor(chosen.url, chosen.name);
+        }
+      }
+    });
+  }
+}
+
+async function handleImageUploadFiles(files) {
+  const statusEl = document.getElementById('r2-upload-status');
+  const statusText = document.getElementById('r2-upload-status-text');
+
+  if (statusEl) {
+    statusEl.style.display = 'flex';
+    if (statusText) statusText.textContent = `${files.length}개의 사진을 Cloudflare R2에 업로드하는 중...`;
+  }
+
+  const formData = new FormData();
+  files.forEach(f => {
+    formData.append('files', f);
+  });
+
+  try {
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!res.ok) {
+      throw new Error(`서버 응답 오류 (${res.status})`);
+    }
+
+    const data = await res.json();
+    if (data.success && Array.isArray(data.files)) {
+      const currentCover = document.getElementById('editor-cover')?.value.trim();
+      const isFirstBatch = (uploadedArticleImages.length === 0);
+
+      data.files.forEach((file, index) => {
+        const isCover = (isFirstBatch && index === 0 && (!currentCover || currentCover === '/assets/images/glass-skin.jpg'));
+        uploadedArticleImages.push({
+          id: file.key || `img_${Date.now()}_${index}`,
+          key: file.key,
+          url: file.url,
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          isCover: isCover,
+          storage: file.storage || 'r2'
+        });
+
+        if (isCover) {
+          const coverInput = document.getElementById('editor-cover');
+          if (coverInput) coverInput.value = file.url;
+        }
+      });
+
+      renderR2Gallery();
+      showToast({
+        title: 'Cloudflare R2 업로드 완료',
+        message: `${data.files.length}개의 사진이 Cloudflare R2에 안전하게 저장되었습니다.`
+      });
+    } else {
+      throw new Error(data.error || '업로드 처리에 실패했습니다.');
+    }
+  } catch (err) {
+    console.error('Upload failed:', err);
+    showToast({
+      title: '사진 업로드 실패',
+      message: err.message || '사진 업로드 중 오류가 발생했습니다.'
+    });
+  } finally {
+    if (statusEl) statusEl.style.display = 'none';
+  }
+}
+
+function renderR2Gallery() {
+  const wrap = document.getElementById('r2-gallery-wrap');
+  const grid = document.getElementById('r2-gallery-grid');
+  const countEl = document.getElementById('r2-gallery-count');
+  const coverInput = document.getElementById('editor-cover');
+  const currentCoverUrl = coverInput ? coverInput.value.trim() : '';
+
+  if (!wrap || !grid) return;
+
+  if (uploadedArticleImages.length === 0) {
+    wrap.style.display = 'none';
+    grid.innerHTML = '';
+    return;
+  }
+
+  wrap.style.display = 'block';
+  if (countEl) countEl.textContent = uploadedArticleImages.length;
+
+  grid.innerHTML = uploadedArticleImages.map((img, idx) => {
+    const isCover = (img.url === currentCoverUrl || img.isCover);
+    const sizeStr = img.size ? `${(img.size / 1024).toFixed(1)} KB` : 'R2 Image';
+    const cleanName = img.name || `photo-${idx + 1}`;
+
+    return `
+      <div class="r2-img-card ${isCover ? 'is-cover' : ''}" data-url="${img.url}">
+        <div class="r2-card-thumb-wrap">
+          <img src="${img.url}" alt="${cleanName}" class="r2-card-thumb" onerror="this.src='/assets/images/glass-skin.jpg';" />
+          ${isCover ? '<div class="r2-card-cover-tag">★ 대표 사진 (Cover)</div>' : ''}
+        </div>
+        <div class="r2-card-body">
+          <div class="r2-card-filename" title="${cleanName}">${cleanName}</div>
+          <div class="r2-card-meta">
+            <span>${sizeStr}</span>
+            <span style="color: #38BDF8; font-weight: 600;">☁️ R2</span>
+          </div>
+          <div class="r2-card-actions">
+            <button type="button" class="btn-r2-cover ${isCover ? 'is-selected' : ''}" data-action="set-cover" data-url="${img.url}" title="이 사진을 글의 대표 커버 사진으로 지정합니다">
+              ${isCover ? '✓ 대표 사진 선택됨' : '⭐ 대표 사진 지정'}
+            </button>
+            <button type="button" class="btn-r2-insert" data-action="insert-content" data-url="${img.url}" data-name="${cleanName}" title="현재 본문 커서 위치에 마크다운 사진으로 즉시 배치합니다">
+              📌 본문 원하는 곳에 삽입
+            </button>
+            <div class="r2-card-sub-actions">
+              <button type="button" class="btn-r2-sub" data-action="copy-url" data-url="${img.url}">주소 복사</button>
+              <button type="button" class="btn-r2-sub delete-btn" data-action="delete" data-url="${img.url}">제거</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  grid.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const action = btn.dataset.action;
+      const url = btn.dataset.url;
+      const name = btn.dataset.name;
+
+      if (action === 'set-cover') {
+        selectAsCoverImage(url);
+      } else if (action === 'insert-content') {
+        insertImageAtCursor(url, name);
+      } else if (action === 'copy-url') {
+        navigator.clipboard.writeText(url).then(() => {
+          showToast({ title: 'URL 복사 완료', message: '사진 주소가 클립보드에 복사되었습니다.' });
+        });
+      } else if (action === 'delete') {
+        uploadedArticleImages = uploadedArticleImages.filter(item => item.url !== url);
+        renderR2Gallery();
+        showToast({ title: '사진 제거', message: '갤러리 목록에서 사진이 제거되었습니다.' });
+      }
+    });
+  });
+}
+
+function selectAsCoverImage(imageUrl) {
+  const coverInput = document.getElementById('editor-cover');
+  if (coverInput) {
+    coverInput.value = imageUrl;
+  }
+  uploadedArticleImages.forEach(img => {
+    img.isCover = (img.url === imageUrl);
+  });
+  renderR2Gallery();
+
+  if (currentEditorLang === 'preview') {
+    renderLivePreview(currentPreviewLang);
+  }
+  showToast({
+    title: '대표 사진 지정 완료',
+    message: '선택한 사진이 메인 커버 대표 사진으로 설정되었습니다.'
+  });
+}
+
+function insertImageAtCursor(imageUrl, altText = '') {
+  const textarea = document.getElementById('editor-content');
+  if (!textarea) return;
+
+  const startPos = textarea.selectionStart ?? textarea.value.length;
+  const endPos = textarea.selectionEnd ?? textarea.value.length;
+  const before = textarea.value.substring(0, startPos);
+  const after = textarea.value.substring(endPos);
+
+  const prefix = (before.length > 0 && !before.endsWith('\n\n')) ? (before.endsWith('\n') ? '\n' : '\n\n') : '';
+  const suffix = (after.length > 0 && !after.startsWith('\n\n')) ? (after.startsWith('\n') ? '\n' : '\n\n') : '';
+  const cleanAlt = (altText || '사진 설명').replace(/\.[^/.]+$/, '');
+  const markdownImg = `${prefix}![${cleanAlt}](${imageUrl})${suffix}`;
+
+  textarea.value = before + markdownImg + after;
+  const newCursorPos = startPos + markdownImg.length;
+  textarea.selectionStart = newCursorPos;
+  textarea.selectionEnd = newCursorPos;
+  textarea.focus();
+
+  textarea.dispatchEvent(new Event('input', { bubbles: true }));
+  saveCurrentEditorLangFields();
+
+  showToast({
+    title: '본문 사진 배치 완료',
+    message: `본문 커서 위치에 사진이 배치되었습니다. (${cleanAlt})`
+  });
 }
 
 /* =========================================================

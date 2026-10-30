@@ -2095,3 +2095,30 @@ body:not(:has(.seo-fab)) .floating-coupon-pill {
   }
 }
 
+/* Article Inline Figures & Markdown Images */
+.article-body-figure {
+  margin: 32px auto;
+  text-align: center;
+  max-width: 100%;
+}
+
+.article-body-inline-img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  display: inline-block;
+  vertical-align: middle;
+  border: 1px solid var(--color-card-border);
+}
+
+.article-body-figcaption {
+  margin-top: 10px;
+  font-size: 0.86rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+  line-height: 1.45;
+  text-align: center;
+}
+
+
