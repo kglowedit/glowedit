@@ -3,7 +3,7 @@
  * Pure K-Beauty Editorial Blog & Community Intelligence Concept
  */
 
-import { buildOliveYoungUrl, copyPromoCode, handleAffiliateClick, PROMO_CODE, showToast } from './affiliate.js';
+import { buildOliveYoungUrl, copyPromoCode, handleAffiliateClick, PROMO_CODE, showToast, applyPromoSettingsToDOM } from './affiliate.js';
 import { 
   getArticles,
   getPublishedArticles, 
@@ -150,6 +150,7 @@ function setupRoutineQuiz() {
 
 function renderApp() {
   applyI18nLabels();
+  applyPromoSettingsToDOM();
   renderFeaturedStory();
   renderArticles();
   renderSidebarCommunity();

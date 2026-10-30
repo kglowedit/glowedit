@@ -1,11 +1,19 @@
 /**
- * Olive Young Global Affiliate Engine
- * Generates tracked affiliate links, logs outbound click events, and shows promo reminders
+ * Olive Young Global Affiliate & Promotion Engine
+ * Handles tracked affiliate links, promo code management, dynamic banner & coupon rendering, and toast reminders
  */
 
-import { recordAffiliateClick } from './data.js';
+import { recordAffiliateClick, getPromoSettings, savePromoSettings, DEFAULT_PROMO_SETTINGS } from './data.js';
 import { getLang, t } from './i18n.js';
 
+export { getPromoSettings, savePromoSettings, DEFAULT_PROMO_SETTINGS };
+
+export function getActivePromoCode() {
+  const settings = getPromoSettings();
+  return settings.topBanner?.promoCode || settings.eventCoupon?.promoCode || "GLOW10";
+}
+
+// Fallback constant for backwards compatibility
 export const PROMO_CODE = "GLOW10";
 
 export function buildOliveYoungUrl(baseUrl, subId = "global_editorial") {
@@ -30,11 +38,12 @@ export function handleAffiliateClick(e, productId, directUrl, source = "product_
 
   // 2. Build final tracking URL
   const trackedUrl = buildOliveYoungUrl(directUrl, source);
+  const activeCode = getActivePromoCode();
 
   // 3. Show luxury toast notification reminding the user of the discount code
   showToast({
     title: t('officialAffiliateLink'),
-    message: `${t('promoBarText')} ${PROMO_CODE} ${t('promoBarDiscount')}`,
+    message: `${t('promoBarText')} ${activeCode} ${t('promoBarDiscount')}`,
     icon: '🛍️',
     duration: 3500
   });
@@ -45,11 +54,17 @@ export function handleAffiliateClick(e, productId, directUrl, source = "product_
   }, 400);
 }
 
-export function copyPromoCode(btnElement) {
-  navigator.clipboard.writeText(PROMO_CODE).then(() => {
+export function copyPromoCode(btnElement, customCode = null) {
+  const codeToCopy = customCode || getActivePromoCode();
+  const settings = getPromoSettings();
+  const successMsg = settings.eventCoupon?.copySuccessMessage
+    ? settings.eventCoupon.copySuccessMessage.replace(/GLOW10/g, codeToCopy)
+    : `Code "${codeToCopy}" copied to clipboard! Paste at checkout.`;
+
+  navigator.clipboard.writeText(codeToCopy).then(() => {
     showToast({
       title: "PROMO CODE COPIED",
-      message: `Code "${PROMO_CODE}" copied to clipboard! Paste at Olive Young Global checkout.`,
+      message: successMsg,
       icon: '✨'
     });
 
@@ -93,7 +108,6 @@ export function showToast({ title, message, icon = '✨', duration = 3000 }) {
 
   container.appendChild(toast);
 
-  // Animate in
   requestAnimationFrame(() => {
     toast.classList.add('show');
   });
@@ -102,4 +116,176 @@ export function showToast({ title, message, icon = '✨', duration = 3000 }) {
     toast.classList.remove('show');
     setTimeout(() => toast.remove(), 300);
   }, duration);
+}
+
+/**
+ * Apply dynamic promotion settings (top banner, sidebar coupon, floating coupon) to DOM
+ */
+export function applyPromoSettingsToDOM() {
+  const settings = getPromoSettings();
+  const currentLang = getLang();
+
+  // 1. Top Banner
+  const topBar = document.getElementById('top-promo-bar') || document.querySelector('.top-promo-bar');
+  if (topBar) {
+    if (!settings.topBanner.enabled) {
+      topBar.style.display = 'none';
+    } else {
+      topBar.style.display = 'flex';
+
+      // Update background theme
+      topBar.classList.remove('theme-dark', 'theme-rose', 'theme-gold', 'theme-emerald');
+      const theme = settings.topBanner.bgTheme || 'dark';
+      topBar.classList.add(`theme-${theme}`);
+
+      // Update Badge
+      const badgeEl = topBar.querySelector('.promo-badge');
+      if (badgeEl && settings.topBanner.badge) {
+        badgeEl.textContent = settings.topBanner.badge;
+      }
+
+      // Update Text based on current language
+      const textEl = document.getElementById('top-promo-text') || topBar.querySelector('[data-i18n="promoBarText"]');
+      if (textEl) {
+        let txt = settings.topBanner.textEn || settings.topBanner.text || t('promoBarText');
+        if (currentLang === 'zh' && settings.topBanner.textZh) txt = settings.topBanner.textZh;
+        else if (currentLang === 'ja' && settings.topBanner.textJa) txt = settings.topBanner.textJa;
+        else if (currentLang === 'ko' && settings.topBanner.textKo) txt = settings.topBanner.textKo;
+        textEl.textContent = txt;
+      }
+
+      // Update Promo Code in button
+      const codeSpan = document.getElementById('top-promo-code') || topBar.querySelector('.promo-code-btn span:first-child');
+      if (codeSpan && settings.topBanner.promoCode) {
+        codeSpan.textContent = settings.topBanner.promoCode;
+      }
+
+      // Update Discount Text based on current language
+      const discEl = document.getElementById('top-promo-discount') || topBar.querySelector('[data-i18n="promoBarDiscount"]');
+      if (discEl) {
+        let disc = settings.topBanner.discountEn || settings.topBanner.discount || t('promoBarDiscount');
+        if (currentLang === 'zh' && settings.topBanner.discountZh) disc = settings.topBanner.discountZh;
+        else if (currentLang === 'ja' && settings.topBanner.discountJa) disc = settings.topBanner.discountJa;
+        else if (currentLang === 'ko' && settings.topBanner.discountKo) disc = settings.topBanner.discountKo;
+        discEl.textContent = disc;
+      }
+    }
+  }
+
+  // 2. Sidebar Promo Widget (Right Sidebar Coupon on Main Page)
+  const sidebarWidget = document.getElementById('sidebar-promo-widget') || document.querySelector('.sidebar-promo-widget');
+  if (sidebarWidget) {
+    if (!settings.eventCoupon.enabled) {
+      sidebarWidget.style.display = 'none';
+    } else {
+      sidebarWidget.style.display = 'block';
+
+      const badgeEl = sidebarWidget.querySelector('.sidebar-promo-badge');
+      if (badgeEl && settings.eventCoupon.badge) {
+        badgeEl.textContent = settings.eventCoupon.badge;
+      }
+
+      const titleEl = sidebarWidget.querySelector('h4');
+      if (titleEl && settings.eventCoupon.title) {
+        titleEl.textContent = settings.eventCoupon.title;
+      }
+
+      const descEl = sidebarWidget.querySelector('p');
+      if (descEl && settings.eventCoupon.desc) {
+        descEl.textContent = settings.eventCoupon.desc;
+      }
+
+      const codeEl = sidebarWidget.querySelector('code');
+      if (codeEl && settings.eventCoupon.promoCode) {
+        codeEl.textContent = settings.eventCoupon.promoCode;
+      }
+
+      // Optional direct shop link button
+      let linkEl = sidebarWidget.querySelector('.sidebar-promo-shop-link');
+      if (settings.eventCoupon.landingUrl) {
+        if (!linkEl) {
+          linkEl = document.createElement('a');
+          linkEl.className = 'sidebar-promo-shop-link';
+          linkEl.target = '_blank';
+          linkEl.rel = 'noopener noreferrer';
+          sidebarWidget.appendChild(linkEl);
+        }
+        linkEl.href = settings.eventCoupon.landingUrl;
+        linkEl.innerHTML = `<span>${settings.eventCoupon.targetMallName || 'Olive Young Global'}</span> <span>↗</span>`;
+      } else if (linkEl) {
+        linkEl.remove();
+      }
+    }
+  }
+
+  // 3. Floating Coupon Widget (Bottom Right)
+  renderFloatingCouponWidget(settings);
+}
+
+/**
+ * Render or remove floating coupon pill on bottom-right of viewport
+ */
+export function renderFloatingCouponWidget(settings = null) {
+  if (!settings) settings = getPromoSettings();
+
+  const existing = document.getElementById('floating-coupon-pill');
+  if (!settings.eventCoupon.enabled || !settings.eventCoupon.floatingEnabled) {
+    if (existing) existing.remove();
+    return;
+  }
+
+  const promoCode = settings.eventCoupon.promoCode || "GLOW10";
+  const discountTag = settings.eventCoupon.discountTag || "10% OFF";
+
+  let pill = existing;
+  if (!pill) {
+    pill = document.createElement('div');
+    pill.id = 'floating-coupon-pill';
+    pill.className = 'floating-coupon-pill';
+    pill.setAttribute('role', 'region');
+    pill.setAttribute('aria-label', 'Reader Promotion Coupon');
+    document.body.appendChild(pill);
+  }
+
+  pill.innerHTML = `
+    <div class="floating-coupon-inner">
+      <span class="floating-coupon-icon" aria-hidden="true">🎁</span>
+      <div class="floating-coupon-info">
+        <span class="floating-coupon-tag">${discountTag}</span>
+        <strong class="floating-coupon-code">${promoCode}</strong>
+      </div>
+      <button class="floating-coupon-btn" id="floating-coupon-btn" title="Click to copy coupon code">
+        <span>Copy</span>
+        <span>📋</span>
+      </button>
+    </div>
+  `;
+
+  const btn = pill.querySelector('#floating-coupon-btn');
+  btn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    copyPromoCode(btn, promoCode);
+  });
+
+  pill.addEventListener('click', () => {
+    copyPromoCode(btn, promoCode);
+  });
+}
+
+export function initPromoCodeButtons() {
+  // Apply current settings
+  applyPromoSettingsToDOM();
+
+  const barBtn = document.getElementById('promo-code-btn');
+  const sidebarBtn = document.getElementById('sidebar-promo-copy-btn');
+  
+  barBtn?.addEventListener('click', () => {
+    const settings = getPromoSettings();
+    copyPromoCode(barBtn, settings.topBanner.promoCode);
+  });
+
+  sidebarBtn?.addEventListener('click', () => {
+    const settings = getPromoSettings();
+    copyPromoCode(sidebarBtn, settings.eventCoupon.promoCode);
+  });
 }

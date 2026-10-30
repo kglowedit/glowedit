@@ -1306,6 +1306,70 @@ export function likeCommunityComment(postId, commentId) {
   return { likes: 0, isLiked: false };
 }
 
+// =========================================================
+// 8. Promo Bar & Event Coupon Management Settings
+// =========================================================
+export const DEFAULT_PROMO_SETTINGS = {
+  topBanner: {
+    enabled: true,
+    badge: "READER PRIVILEGE",
+    textEn: "K-BEUTY GLOW READERS: Use promo code",
+    textZh: "K-BEUTY GLOW 读者专属海淘礼遇：结账输入优惠码",
+    textJa: "K-BEUTY GLOW 読者限定特典：Olive Young Global 会計時にコード",
+    textKo: "K-BEUTY GLOW 독자 전용 혜택: 결제 시 프로모션 코드",
+    promoCode: "GLOW10",
+    discountEn: "for an exclusive 10% OFF at Olive Young Global",
+    discountZh: "在 Olive Young Global 享全场额外 10% 折扣",
+    discountJa: "入力でさらに10%OFF",
+    discountKo: "입력 시 올리브영 글로벌 전 품목 10% 추가 할인",
+    linkUrl: "https://global.oliveyoung.com",
+    bgTheme: "dark" // 'dark' | 'rose' | 'gold' | 'emerald'
+  },
+  eventCoupon: {
+    enabled: true,
+    badge: "READER PRIVILEGE",
+    title: "Olive Young Global 10% OFF",
+    desc: "Exclusive verified reader code valid on authentic Korean skincare & cosmetics shipped worldwide.",
+    promoCode: "GLOW10",
+    discountTag: "10% OFF",
+    targetMallName: "Olive Young Global",
+    landingUrl: "https://global.oliveyoung.com",
+    copySuccessMessage: "Code \"GLOW10\" copied to clipboard! Paste at Olive Young Global checkout.",
+    floatingEnabled: true
+  }
+};
+
+export function getPromoSettings() {
+  const saved = localStorage.getItem('kbeauty_promo_settings');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      return {
+        topBanner: { ...DEFAULT_PROMO_SETTINGS.topBanner, ...(parsed.topBanner || {}) },
+        eventCoupon: { ...DEFAULT_PROMO_SETTINGS.eventCoupon, ...(parsed.eventCoupon || {}) }
+      };
+    } catch (e) {
+      console.error("Error reading saved promo settings", e);
+    }
+  }
+  return JSON.parse(JSON.stringify(DEFAULT_PROMO_SETTINGS));
+}
+
+export function savePromoSettings(settings) {
+  const current = getPromoSettings();
+  const merged = {
+    topBanner: { ...current.topBanner, ...(settings.topBanner || {}) },
+    eventCoupon: { ...current.eventCoupon, ...(settings.eventCoupon || {}) }
+  };
+  localStorage.setItem('kbeauty_promo_settings', JSON.stringify(merged));
+  return merged;
+}
+
+export function resetPromoSettings() {
+  localStorage.setItem('kbeauty_promo_settings', JSON.stringify(DEFAULT_PROMO_SETTINGS));
+  return JSON.parse(JSON.stringify(DEFAULT_PROMO_SETTINGS));
+}
+
 // Reset data helper
 export function resetDemoData() {
   localStorage.setItem('kbeauty_articles', JSON.stringify(INITIAL_ARTICLES));
@@ -1315,5 +1379,6 @@ export function resetDemoData() {
   localStorage.setItem('kbeauty_community_posts', JSON.stringify(INITIAL_COMMUNITY_POSTS));
   localStorage.setItem('kbeauty_community_posts_v3', JSON.stringify(INITIAL_COMMUNITY_POSTS));
   localStorage.removeItem('kbeauty_affiliate_click_log');
+  resetPromoSettings();
 }
 

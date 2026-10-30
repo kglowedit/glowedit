@@ -29,7 +29,11 @@ import {
   toggleHideCommunityPost,
   addCommunityComment,
   deleteCommunityComment,
-  resetDemoData 
+  resetDemoData,
+  getPromoSettings,
+  savePromoSettings,
+  resetPromoSettings,
+  DEFAULT_PROMO_SETTINGS
 } from './data.js';
 import { 
   translateFullArticle, 
@@ -72,6 +76,7 @@ export function initAdminApp() {
   setupTagForm();
   setupGeminiSettings();
   setupResetDemo();
+  setupPromotionsModule();
 }
 
 function updateTopCounters() {
@@ -79,6 +84,7 @@ function updateTopCounters() {
   const categories = getCategories();
   const tags = getTags();
   const communityPosts = getCommunityPosts();
+  const promoSettings = getPromoSettings();
 
   const publishedArticles = articles.filter(a => (a.status || 'published') === 'published');
   const draftArticles = articles.filter(a => a.status === 'draft');
@@ -89,6 +95,7 @@ function updateTopCounters() {
   const elCat = document.getElementById('stat-categories-count');
   const elTag = document.getElementById('stat-tags-count');
   const elComm = document.getElementById('stat-community-count');
+  const elPromo = document.getElementById('stat-promo-status');
 
   if (elArt) elArt.textContent = articles.length;
   if (elPublished) elPublished.textContent = publishedArticles.length;
@@ -96,6 +103,12 @@ function updateTopCounters() {
   if (elCat) elCat.textContent = categories.length;
   if (elTag) elTag.textContent = tags.length;
   if (elComm) elComm.textContent = communityPosts.length;
+  if (elPromo) {
+    const topText = promoSettings.topBanner.enabled ? '상단ON' : '상단OFF';
+    const couponText = promoSettings.eventCoupon.enabled ? '쿠폰ON' : '쿠폰OFF';
+    elPromo.textContent = `${topText} · ${couponText}`;
+    elPromo.style.color = (promoSettings.topBanner.enabled || promoSettings.eventCoupon.enabled) ? '#F472B6' : '#94A3B8';
+  }
 
   const countFilterAll = document.getElementById('count-filter-all');
   const countFilterPub = document.getElementById('count-filter-published');
@@ -134,6 +147,7 @@ function setupNavigationTabs() {
       if (tab === 'categories') renderCategoriesTable();
       if (tab === 'tags') renderTagsChips();
       if (tab === 'community') renderCommunityTable();
+      if (tab === 'promotions') renderPromotionsPanel();
     });
   });
 }
@@ -142,14 +156,15 @@ function setupResetDemo() {
   const resetBtn = document.getElementById('btn-reset-demo');
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
-      if (confirm('기본 데모 데이터(글, 카테고리, 태그, 커뮤니티 게시글)를 초기 상태로 복원하시겠습니까?')) {
+      if (confirm('기본 데모 데이터(글, 카테고리, 태그, 커뮤니티 게시글, 배너/쿠폰 설정)를 초기 상태로 복원하시겠습니까?')) {
         resetDemoData();
         updateTopCounters();
         renderArticlesTable();
         renderCategoriesTable();
         renderTagsChips();
         renderCommunityTable();
-        showToast({ title: "초기화 완료", message: "기본 데모 콘텐츠가 복구되었습니다." });
+        renderPromotionsPanel();
+        showToast({ title: "초기화 완료", message: "기본 데모 콘텐츠와 배너/쿠폰 설정이 복구되었습니다." });
       }
     });
   }
@@ -1679,4 +1694,276 @@ function escapeHtml(str) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+/* =========================================================
+   5. 상단 배너 & 이벤트 쿠폰 관리 (Promotions & Banner Management)
+========================================================= */
+let currentPromoTheme = 'dark';
+let activePromoLang = 'en';
+
+function setupPromotionsModule() {
+  const saveBtn = document.getElementById('btn-save-promotions');
+  const resetBtn = document.getElementById('btn-reset-promotions');
+
+  saveBtn?.addEventListener('click', handleSavePromotions);
+  resetBtn?.addEventListener('click', handleResetPromotions);
+
+  // Theme selector buttons
+  const themeContainer = document.getElementById('promo-theme-selector');
+  themeContainer?.querySelectorAll('.promo-theme-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      themeContainer.querySelectorAll('.promo-theme-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentPromoTheme = btn.dataset.theme || 'dark';
+      updatePromotionsLivePreview();
+    });
+  });
+
+  // Language subtabs
+  const langTabsContainer = document.getElementById('promo-lang-tabs');
+  langTabsContainer?.querySelectorAll('.promo-lang-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const lang = btn.dataset.promoLang;
+      langTabsContainer.querySelectorAll('.promo-lang-tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.promo-lang-panel').forEach(p => p.classList.remove('active'));
+
+      btn.classList.add('active');
+      const panel = document.getElementById(`promo-lang-panel-${lang}`);
+      if (panel) panel.classList.add('active');
+      activePromoLang = lang;
+      updatePromotionsLivePreview();
+    });
+  });
+
+  // Real-time input listeners for Live Sync Preview
+  const inputIds = [
+    'promo-top-enabled', 'promo-top-badge', 'promo-top-code', 'promo-top-link',
+    'promo-top-text-en', 'promo-top-disc-en',
+    'promo-top-text-ko', 'promo-top-disc-ko',
+    'promo-top-text-zh', 'promo-top-disc-zh',
+    'promo-top-text-ja', 'promo-top-disc-ja',
+    'promo-coupon-enabled', 'promo-floating-enabled',
+    'promo-coupon-badge', 'promo-coupon-discount-tag',
+    'promo-coupon-title', 'promo-coupon-code',
+    'promo-coupon-desc', 'promo-coupon-mall',
+    'promo-coupon-url', 'promo-coupon-success-msg'
+  ];
+
+  inputIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', updatePromotionsLivePreview);
+      el.addEventListener('change', updatePromotionsLivePreview);
+    }
+  });
+
+  renderPromotionsPanel();
+}
+
+function renderPromotionsPanel() {
+  const settings = getPromoSettings();
+  currentPromoTheme = settings.topBanner.bgTheme || 'dark';
+
+  // Top Banner Form fields
+  const elTopEnabled = document.getElementById('promo-top-enabled');
+  if (elTopEnabled) elTopEnabled.checked = Boolean(settings.topBanner.enabled);
+
+  const themeContainer = document.getElementById('promo-theme-selector');
+  if (themeContainer) {
+    themeContainer.querySelectorAll('.promo-theme-pill').forEach(b => {
+      b.classList.toggle('active', b.dataset.theme === currentPromoTheme);
+    });
+  }
+
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val !== undefined && val !== null ? val : '';
+  };
+
+  setVal('promo-top-badge', settings.topBanner.badge);
+  setVal('promo-top-code', settings.topBanner.promoCode);
+  setVal('promo-top-link', settings.topBanner.linkUrl);
+
+  setVal('promo-top-text-en', settings.topBanner.textEn || settings.topBanner.text);
+  setVal('promo-top-disc-en', settings.topBanner.discountEn || settings.topBanner.discount);
+
+  setVal('promo-top-text-ko', settings.topBanner.textKo);
+  setVal('promo-top-disc-ko', settings.topBanner.discountKo);
+
+  setVal('promo-top-text-zh', settings.topBanner.textZh);
+  setVal('promo-top-disc-zh', settings.topBanner.discountZh);
+
+  setVal('promo-top-text-ja', settings.topBanner.textJa);
+  setVal('promo-top-disc-ja', settings.topBanner.discountJa);
+
+  // Coupon Form fields
+  const elCouponEnabled = document.getElementById('promo-coupon-enabled');
+  if (elCouponEnabled) elCouponEnabled.checked = Boolean(settings.eventCoupon.enabled);
+
+  const elFloatingEnabled = document.getElementById('promo-floating-enabled');
+  if (elFloatingEnabled) elFloatingEnabled.checked = Boolean(settings.eventCoupon.floatingEnabled);
+
+  setVal('promo-coupon-badge', settings.eventCoupon.badge);
+  setVal('promo-coupon-discount-tag', settings.eventCoupon.discountTag);
+  setVal('promo-coupon-title', settings.eventCoupon.title);
+  setVal('promo-coupon-code', settings.eventCoupon.promoCode);
+  setVal('promo-coupon-desc', settings.eventCoupon.desc);
+  setVal('promo-coupon-mall', settings.eventCoupon.targetMallName);
+  setVal('promo-coupon-url', settings.eventCoupon.landingUrl);
+  setVal('promo-coupon-success-msg', settings.eventCoupon.copySuccessMessage);
+
+  updatePromotionsLivePreview();
+}
+
+function updatePromotionsLivePreview() {
+  const getVal = (id) => (document.getElementById(id)?.value || '').trim();
+  const getChecked = (id) => Boolean(document.getElementById(id)?.checked);
+
+  const topEnabled = getChecked('promo-top-enabled');
+  const topBadge = getVal('promo-top-badge') || 'READER PRIVILEGE';
+  const topCode = getVal('promo-top-code') || 'GLOW10';
+  
+  // Pick active text according to activePromoLang
+  let topText = getVal(`promo-top-text-${activePromoLang}`) || getVal('promo-top-text-en') || 'K-BEUTY GLOW READERS: Use promo code';
+  let topDiscount = getVal(`promo-top-disc-${activePromoLang}`) || getVal('promo-top-disc-en') || 'for an exclusive 10% OFF at Olive Young Global';
+
+  // Preview 1: Top Banner
+  const previewTopBar = document.getElementById('preview-top-banner');
+  const previewTopDisabled = document.getElementById('preview-top-disabled-msg');
+  if (previewTopBar && previewTopDisabled) {
+    if (topEnabled) {
+      previewTopBar.style.display = 'block';
+      previewTopDisabled.style.display = 'none';
+
+      previewTopBar.className = `promo-live-top-banner theme-${currentPromoTheme}`;
+      const elBadge = document.getElementById('preview-top-badge');
+      if (elBadge) elBadge.textContent = topBadge;
+
+      const elText = document.getElementById('preview-top-text');
+      if (elText) elText.textContent = topText;
+
+      const elCode = document.getElementById('preview-top-code');
+      if (elCode) elCode.textContent = topCode;
+
+      const elDisc = document.getElementById('preview-top-discount');
+      if (elDisc) elDisc.textContent = topDiscount;
+    } else {
+      previewTopBar.style.display = 'none';
+      previewTopDisabled.style.display = 'block';
+    }
+  }
+
+  // Preview 2: Sidebar Coupon
+  const couponEnabled = getChecked('promo-coupon-enabled');
+  const previewSidebar = document.getElementById('preview-sidebar-widget');
+  const previewSidebarDisabled = document.getElementById('preview-sidebar-disabled-msg');
+  if (previewSidebar && previewSidebarDisabled) {
+    if (couponEnabled) {
+      previewSidebar.style.display = 'block';
+      previewSidebarDisabled.style.display = 'none';
+
+      const couponBadge = getVal('promo-coupon-badge') || 'READER PRIVILEGE';
+      const couponTitle = getVal('promo-coupon-title') || 'Olive Young Global 10% OFF';
+      const couponCode = getVal('promo-coupon-code') || 'GLOW10';
+      const couponDesc = getVal('promo-coupon-desc') || '';
+      const couponMall = getVal('promo-coupon-mall') || 'Olive Young Global';
+
+      const elBadge = document.getElementById('preview-sidebar-badge');
+      if (elBadge) elBadge.textContent = couponBadge;
+
+      const elTitle = document.getElementById('preview-sidebar-title');
+      if (elTitle) elTitle.textContent = couponTitle;
+
+      const elCode = document.getElementById('preview-sidebar-code');
+      if (elCode) elCode.textContent = couponCode;
+
+      const elDesc = document.getElementById('preview-sidebar-desc');
+      if (elDesc) elDesc.textContent = couponDesc;
+
+      const elMall = document.getElementById('preview-sidebar-mall');
+      if (elMall) elMall.textContent = couponMall;
+    } else {
+      previewSidebar.style.display = 'none';
+      previewSidebarDisabled.style.display = 'block';
+    }
+  }
+
+  // Preview 3: Floating Coupon Widget
+  const floatingEnabled = getChecked('promo-floating-enabled') && couponEnabled;
+  const previewFloating = document.getElementById('preview-floating-pill');
+  const previewFloatingDisabled = document.getElementById('preview-floating-disabled-msg');
+  if (previewFloating && previewFloatingDisabled) {
+    if (floatingEnabled) {
+      previewFloating.style.display = 'inline-block';
+      previewFloatingDisabled.style.display = 'none';
+
+      const couponCode = getVal('promo-coupon-code') || 'GLOW10';
+      const discountTag = getVal('promo-coupon-discount-tag') || '10% OFF';
+
+      const elCode = document.getElementById('preview-floating-code');
+      if (elCode) elCode.textContent = couponCode;
+
+      const elTag = document.getElementById('preview-floating-tag');
+      if (elTag) elTag.textContent = discountTag;
+    } else {
+      previewFloating.style.display = 'none';
+      previewFloatingDisabled.style.display = 'block';
+    }
+  }
+}
+
+function handleSavePromotions() {
+  const getVal = (id) => (document.getElementById(id)?.value || '').trim();
+  const getChecked = (id) => Boolean(document.getElementById(id)?.checked);
+
+  const updatedSettings = {
+    topBanner: {
+      enabled: getChecked('promo-top-enabled'),
+      badge: getVal('promo-top-badge') || 'READER PRIVILEGE',
+      promoCode: getVal('promo-top-code') || 'GLOW10',
+      linkUrl: getVal('promo-top-link') || 'https://global.oliveyoung.com',
+      bgTheme: currentPromoTheme || 'dark',
+      textEn: getVal('promo-top-text-en'),
+      discountEn: getVal('promo-top-disc-en'),
+      textKo: getVal('promo-top-text-ko'),
+      discountKo: getVal('promo-top-disc-ko'),
+      textZh: getVal('promo-top-text-zh'),
+      discountZh: getVal('promo-top-disc-zh'),
+      textJa: getVal('promo-top-text-ja'),
+      discountJa: getVal('promo-top-disc-ja'),
+    },
+    eventCoupon: {
+      enabled: getChecked('promo-coupon-enabled'),
+      floatingEnabled: getChecked('promo-floating-enabled'),
+      badge: getVal('promo-coupon-badge') || 'READER PRIVILEGE',
+      discountTag: getVal('promo-coupon-discount-tag') || '10% OFF',
+      title: getVal('promo-coupon-title') || 'Olive Young Global 10% OFF',
+      promoCode: getVal('promo-coupon-code') || 'GLOW10',
+      desc: getVal('promo-coupon-desc'),
+      targetMallName: getVal('promo-coupon-mall') || 'Olive Young Global',
+      landingUrl: getVal('promo-coupon-url') || 'https://global.oliveyoung.com',
+      copySuccessMessage: getVal('promo-coupon-success-msg') || 'Code copied to clipboard!'
+    }
+  };
+
+  savePromoSettings(updatedSettings);
+  updateTopCounters();
+  updatePromotionsLivePreview();
+  showToast({
+    title: "설정 저장 완료",
+    message: "상단 배너 및 이벤트 쿠폰 설정이 성공적으로 저장되었습니다."
+  });
+}
+
+function handleResetPromotions() {
+  if (confirm('배너 및 이벤트 쿠폰 설정을 기본값으로 되돌리시겠습니까?')) {
+    resetPromoSettings();
+    renderPromotionsPanel();
+    updateTopCounters();
+    showToast({
+      title: "기본값 복원 완료",
+      message: "배너 및 쿠폰 설정이 초기 기본 데모 상태로 복원되었습니다."
+    });
+  }
 }

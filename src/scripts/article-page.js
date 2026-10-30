@@ -5,7 +5,7 @@
 
 import '../styles/tokens.css';
 import '../styles/main.css';
-import { copyPromoCode, handleAffiliateClick } from './affiliate.js';
+import { copyPromoCode, handleAffiliateClick, applyPromoSettingsToDOM } from './affiliate.js';
 import { getArticles, getPublishedArticles, getProducts } from './data.js';
 import { getLang, initLanguage, setLang, t, translations } from './i18n.js';
 import { updateHeadMetadata } from './seo.js';
@@ -14,6 +14,7 @@ let currentArticle = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   initLanguage();
+  applyPromoSettingsToDOM();
   setupArticleHeaderControls();
   loadAndRenderArticle();
 });
@@ -24,6 +25,7 @@ function setupArticleHeaderControls() {
     langSelect.value = getLang();
     langSelect.addEventListener('change', (e) => {
       setLang(e.target.value);
+      applyPromoSettingsToDOM();
       loadAndRenderArticle();
     });
   }

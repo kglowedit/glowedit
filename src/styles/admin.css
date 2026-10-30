@@ -797,4 +797,201 @@
   }
 }
 
+/* =========================================================
+   Promotions & Banner Management Styles
+========================================================= */
+.promotions-grid-layout {
+  display: grid;
+  grid-template-columns: 1fr 430px;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 1200px) {
+  .promotions-grid-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.promo-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #334155;
+  padding-bottom: 14px;
+}
+
+/* Toggle Switch */
+.admin-switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 26px;
+  flex-shrink: 0;
+}
+.admin-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.admin-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #334155;
+  transition: all 0.25s ease;
+  border-radius: 34px;
+}
+.admin-slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #FFFFFF;
+  transition: all 0.25s ease;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+.admin-switch input:checked + .admin-slider {
+  background-color: #10B981;
+}
+.admin-switch input:focus + .admin-slider {
+  box-shadow: 0 0 1px #10B981;
+}
+.admin-switch input:checked + .admin-slider:before {
+  transform: translateX(22px);
+}
+
+/* Theme selector pills */
+.promo-theme-selector {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.promo-theme-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #0F172A;
+  border: 1px solid #334155;
+  color: #CBD5E1;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.promo-theme-pill:hover {
+  border-color: #94A3B8;
+  background: #1E293B;
+  color: #FFFFFF;
+}
+.promo-theme-pill.active {
+  border-color: #EC4899;
+  background: rgba(236, 72, 153, 0.15);
+  color: #FFFFFF;
+  font-weight: 600;
+}
+.theme-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Language Subtabs in Promo Form */
+.promo-lang-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.promo-lang-tab-btn {
+  background: #0F172A;
+  border: 1px solid #334155;
+  color: #94A3B8;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.promo-lang-tab-btn:hover {
+  color: #FFFFFF;
+  border-color: #64748B;
+}
+.promo-lang-tab-btn.active {
+  background: #3B82F6;
+  border-color: #3B82F6;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+.promo-lang-panel {
+  display: none;
+}
+.promo-lang-panel.active {
+  display: block;
+}
+
+/* Preview Column Sticky Box */
+.promo-preview-sticky {
+  position: sticky;
+  top: 84px;
+}
+.preview-live-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #34D399;
+  background: rgba(52, 211, 153, 0.15);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.05em;
+}
+
+/* Live Top Banner Preview Mockup */
+.promo-live-top-banner {
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  color: #FFFFFF;
+  transition: all var(--transition-normal);
+}
+.promo-live-top-banner.theme-dark {
+  background: linear-gradient(90deg, #1A1414 0%, #2A1D20 50%, #1A1414 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.promo-live-top-banner.theme-rose {
+  background: linear-gradient(90deg, #881337 0%, #BE185D 50%, #881337 100%);
+  border: 1px solid rgba(244, 114, 182, 0.4);
+}
+.promo-live-top-banner.theme-gold {
+  background: linear-gradient(90deg, #78350F 0%, #B45309 50%, #78350F 100%);
+  border: 1px solid rgba(251, 191, 36, 0.4);
+}
+.promo-live-top-banner.theme-emerald {
+  background: linear-gradient(90deg, #064E3B 0%, #059669 50%, #064E3B 100%);
+  border: 1px solid rgba(52, 211, 153, 0.4);
+}
+
+/* Live Floating Coupon Pill Mockup */
+.floating-coupon-pill-preview {
+  background: linear-gradient(135deg, #1E1B1B 0%, #2D1E22 100%);
+  border: 1.5px solid rgba(184, 91, 107, 0.4);
+  border-radius: var(--radius-full);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  padding: 6px 12px 6px 10px;
+  display: inline-block;
+}
+
+
 

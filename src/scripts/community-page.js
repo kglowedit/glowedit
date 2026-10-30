@@ -5,7 +5,7 @@
 
 import '../styles/tokens.css';
 import '../styles/main.css';
-import { copyPromoCode, PROMO_CODE, showToast } from './affiliate.js';
+import { copyPromoCode, PROMO_CODE, showToast, applyPromoSettingsToDOM } from './affiliate.js';
 import { 
   getCommunityPosts, 
   getAllCommunityPostsRaw,
@@ -72,9 +72,10 @@ function initCommunityPage() {
 }
 
 function setupPromoCode() {
+  applyPromoSettingsToDOM();
   const promoBtn = document.getElementById('promo-code-btn');
   promoBtn?.addEventListener('click', () => {
-    copyPromoCode();
+    copyPromoCode(promoBtn);
   });
 }
 
@@ -85,6 +86,7 @@ function setupHeaderEvents() {
     langSelect.addEventListener('change', (e) => {
       setLang(e.target.value);
       applyI18nLabels();
+      applyPromoSettingsToDOM();
       renderCommunityBoard();
       if (activeDetailPostId) {
         openCommunityPostDetail(activeDetailPostId);

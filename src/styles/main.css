@@ -1948,6 +1948,124 @@
   background: var(--color-primary-hover);
 }
 
+/* Dynamic Top Promo Bar Theme Variants */
+.top-promo-bar.theme-dark {
+  background: linear-gradient(90deg, #1A1414 0%, #2A1D20 50%, #1A1414 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.top-promo-bar.theme-rose {
+  background: linear-gradient(90deg, #881337 0%, #BE185D 50%, #881337 100%);
+  border-bottom: 1px solid rgba(244, 114, 182, 0.35);
+}
+.top-promo-bar.theme-gold {
+  background: linear-gradient(90deg, #78350F 0%, #B45309 50%, #78350F 100%);
+  border-bottom: 1px solid rgba(251, 191, 36, 0.35);
+}
+.top-promo-bar.theme-emerald {
+  background: linear-gradient(90deg, #064E3B 0%, #059669 50%, #064E3B 100%);
+  border-bottom: 1px solid rgba(52, 211, 153, 0.35);
+}
+
+/* Sidebar Promo Direct Shop Link */
+.sidebar-promo-shop-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-olive-young);
+  text-decoration: none;
+  padding: 6px 12px;
+  background: rgba(154, 182, 42, 0.12);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+.sidebar-promo-shop-link:hover {
+  background: rgba(154, 182, 42, 0.22);
+  color: #789018;
+  transform: translateY(-1px);
+}
+
+/* Floating Coupon Widget on Bottom Right */
+.floating-coupon-pill {
+  position: fixed;
+  bottom: 84px; /* Placed cleanly above .seo-fab on index.html */
+  right: 24px;
+  z-index: 79;
+  background: linear-gradient(135deg, #1E1B1B 0%, #2D1E22 100%);
+  border: 1.5px solid rgba(184, 91, 107, 0.4);
+  border-radius: var(--radius-full);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), 0 0 12px rgba(184, 91, 107, 0.2);
+  padding: 6px 12px 6px 10px;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  animation: floatCouponSubtle 4s ease-in-out infinite;
+}
+.floating-coupon-pill:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35), 0 0 18px rgba(184, 91, 107, 0.4);
+  border-color: var(--color-primary);
+}
+.floating-coupon-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.floating-coupon-icon {
+  font-size: 1.15rem;
+  display: inline-flex;
+}
+.floating-coupon-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.floating-coupon-tag {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #F472B6;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.floating-coupon-code {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: 0.05em;
+}
+.floating-coupon-btn {
+  background: var(--color-primary);
+  color: #FFFFFF;
+  border: none;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.floating-coupon-btn:hover {
+  background: var(--color-primary-hover);
+}
+.floating-coupon-btn.copied {
+  background: var(--color-olive-young);
+}
+
+@keyframes floatCouponSubtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* Adjust position when seo-fab is not present (e.g. community, article) */
+body:not(:has(.seo-fab)) .floating-coupon-pill {
+  bottom: 24px;
+}
+
 .community-standalone-container {
   padding-top: 36px;
   padding-bottom: 60px;

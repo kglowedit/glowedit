@@ -19,7 +19,7 @@
       </div>
     </div>
 
-    <!-- 심플화된 4개 관리 탭 -->
+    <!-- 관리 탭 네비게이션 (글 / 카테고리 / 태그 / 커뮤니티 / 배너&쿠폰) -->
     <nav class="admin-nav-links" aria-label="관리자 탭 네비게이션">
       <button class="admin-tab-btn active" data-tab="articles">
         <span>📝</span>
@@ -36,6 +36,10 @@
       <button class="admin-tab-btn" data-tab="community">
         <span>💬</span>
         <span>커뮤니티(게시판) 관리</span>
+      </button>
+      <button class="admin-tab-btn" data-tab="promotions">
+        <span>🎁</span>
+        <span>배너 & 쿠폰 관리</span>
       </button>
     </nav>
 
@@ -85,6 +89,13 @@
       <div style="background: #1E293B; border: 1px solid #334155; border-radius: var(--radius-md); padding: 16px 20px;">
         <div style="font-size: 0.8rem; color: #94A3B8; font-weight: 600;">글로벌 커뮤니티 게시글</div>
         <div style="font-size: 1.8rem; font-weight: 700; color: #EC4899; margin-top: 4px;" id="stat-community-count">0</div>
+      </div>
+      <div style="background: #1E293B; border: 1px solid #334155; border-radius: var(--radius-md); padding: 16px 20px;">
+        <div style="font-size: 0.8rem; color: #F472B6; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+          <span>🎁</span>
+          <span>진행 중인 프로모션</span>
+        </div>
+        <div style="font-size: 1.15rem; font-weight: 700; color: #F472B6; margin-top: 10px;" id="stat-promo-status">상단ON · 쿠폰ON</div>
       </div>
     </div>
 
@@ -331,6 +342,302 @@
             </tbody>
           </table>
         </div>
+      </div>
+    </div>
+
+    <!-- 탭 5: 상단 배너 & 이벤트 쿠폰 관리 -->
+    <div class="admin-panel" id="panel-promotions">
+      <div class="admin-header-row">
+        <div>
+          <h1 class="admin-page-title">🎁 상단 배너 & 이벤트 쿠폰 관리</h1>
+          <p class="admin-page-sub">사용자 화면 최상단 독자 혜택 배너와 메인 우측 사이드바 쿠폰 카드 및 우측 하단 플로팅 위젯을 실시간으로 설정합니다.</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button type="button" class="btn-action-icon" id="btn-reset-promotions" style="padding: 9px 16px;" title="배너 및 쿠폰 설정을 기본값으로 되돌립니다">
+            🔄 기본값 복원
+          </button>
+          <button type="button" class="btn-admin-primary" id="btn-save-promotions" title="변경된 설정을 저장하고 사이트에 즉시 반영합니다">
+            <span>💾</span>
+            <span>설정 저장하기</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2열 반응형 그리드: 왼쪽 설정 폼 컨트롤, 오른쪽 실시간 라이브 미리보기 -->
+      <div class="promotions-grid-layout">
+        
+        <!-- 왼쪽 열: 설정 폼 컨트롤 -->
+        <div class="promotions-form-col">
+          
+          <!-- 카드 1: 상단 독자 혜택 배너 설정 -->
+          <div class="admin-card" style="margin-bottom: 24px;">
+            <div class="promo-card-header">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.3rem;">📣</span>
+                <div>
+                  <h3 style="font-size: 1.05rem; font-weight: 700; color: #FFFFFF; margin: 0;">상단 독자 혜택 배너 (Top Promo Bar)</h3>
+                  <p style="font-size: 0.8rem; color: #94A3B8; margin: 2px 0 0 0;">메인, 아티클 상세, 커뮤니티 페이지 최상단 고정 프로모션 띠 배너</p>
+                </div>
+              </div>
+              <label class="admin-switch" title="상단 배너 활성화 여부">
+                <input type="checkbox" id="promo-top-enabled" checked />
+                <span class="admin-slider"></span>
+              </label>
+            </div>
+
+            <div class="admin-form-group" style="margin-top: 18px;">
+              <label class="admin-label">배너 테마 색상 (배경 스타일)</label>
+              <div class="promo-theme-selector" id="promo-theme-selector">
+                <button type="button" class="promo-theme-pill active" data-theme="dark">
+                  <span class="theme-dot" style="background: #1A1414; border: 1px solid #78716C;"></span>
+                  <span>럭셔리 다크</span>
+                </button>
+                <button type="button" class="promo-theme-pill" data-theme="rose">
+                  <span class="theme-dot" style="background: #BE185D;"></span>
+                  <span>로즈 핑크</span>
+                </button>
+                <button type="button" class="promo-theme-pill" data-theme="gold">
+                  <span class="theme-dot" style="background: #B45309;"></span>
+                  <span>샴페인 골드</span>
+                </button>
+                <button type="button" class="promo-theme-pill" data-theme="emerald">
+                  <span class="theme-dot" style="background: #059669;"></span>
+                  <span>에메랄드 그린</span>
+                </button>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px;">
+              <div class="admin-form-group">
+                <label class="admin-label">배너 뱃지 텍스트</label>
+                <input type="text" id="promo-top-badge" class="admin-input" placeholder="READER PRIVILEGE" value="READER PRIVILEGE" />
+              </div>
+              <div class="admin-form-group">
+                <label class="admin-label">프로모션 / 쿠폰 코드</label>
+                <input type="text" id="promo-top-code" class="admin-input" placeholder="GLOW10" value="GLOW10" style="font-weight: 700; color: #F472B6;" />
+              </div>
+            </div>
+
+            <div class="admin-form-group" style="margin-top: 16px;">
+              <label class="admin-label">클릭 시 이동할 링크 URL (선택 사항)</label>
+              <input type="url" id="promo-top-link" class="admin-input" placeholder="https://global.oliveyoung.com" value="https://global.oliveyoung.com" />
+            </div>
+
+            <div style="margin-top: 20px; border-top: 1px solid #334155; padding-top: 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                <span class="admin-label" style="font-weight: 700; color: #E2E8F0;">🌐 다국어 문구 설정</span>
+                <span style="font-size: 0.75rem; color: #94A3B8;">언어 변경 시 상단 배너에 자동 매칭될 문구입니다.</span>
+              </div>
+
+              <!-- 언어별 탭 -->
+              <div class="promo-lang-tabs" id="promo-lang-tabs">
+                <button type="button" class="promo-lang-tab-btn active" data-promo-lang="en">🇺🇸 English (기본)</button>
+                <button type="button" class="promo-lang-tab-btn" data-promo-lang="ko">🇰🇷 한국어</button>
+                <button type="button" class="promo-lang-tab-btn" data-promo-lang="zh">🇨🇳 中文</button>
+                <button type="button" class="promo-lang-tab-btn" data-promo-lang="ja">🇯🇵 日本語</button>
+              </div>
+
+              <!-- EN -->
+              <div class="promo-lang-panel active" id="promo-lang-panel-en">
+                <div class="admin-form-group" style="margin-top: 10px;">
+                  <label class="admin-label">메인 안내 문구 (영문)</label>
+                  <input type="text" id="promo-top-text-en" class="admin-input" value="K-BEUTY GLOW READERS: Use promo code" />
+                </div>
+                <div class="admin-form-group" style="margin-top: 10px;">
+                  <label class="admin-label">할인 혜택 문구 (영문)</label>
+                  <input type="text" id="promo-top-disc-en" class="admin-input" value="for an exclusive 10% OFF at Olive Young Global" />
+                </div>
+              </div>
+
+              <!-- KO -->
+              <div class="promo-lang-panel" id="promo-lang-panel-ko">
+                <div class="admin-form-group" style="margin-top: 10px;">
+                  <label class="admin-label">메인 안내 문구 (한국어)</label>
+                  <input type="text" id="promo-top-text-ko" class="admin-input" value="K-BEUTY GLOW 독자 전용 혜택: 결제 시 프로모션 코드" />
+                </div>
+                <div class="admin-form-group" style="margin-top: 10px;">
+                  <label class="admin-label">할인 혜택 문구 (한국어)</label>
+                  <input type="text" id="promo-top-disc-ko" class="admin-input" value="입력 시 올리브영 글로벌 전 품목 10% 추가 할인" />
+                </div>
+              </div>
+
+              <!-- ZH -->
+              <div class="promo-lang-panel" id="promo-lang-panel-zh">
+                <div class="admin-form-group" style="margin-top: 10px;">
+                  <label class="admin-label">메인 안내 문구 (중문)</label>
+                  <input type="text" id="promo-top-text-zh" class="admin-input" value="K-BEUTY GLOW 读者专属海淘礼遇：结账输入优惠码" />
+                </div>
+                <div class="admin-form-group" style="margin-top: 10px;">
+                  <label class="admin-label">할인 혜택 문구 (중문)</label>
+                  <input type="text" id="promo-top-disc-zh" class="admin-input" value="在 Olive Young Global 享全场额外 10% 折扣" />
+                </div>
+              </div>
+
+              <!-- JA -->
+              <div class="promo-lang-panel" id="promo-lang-panel-ja">
+                <div class="admin-form-group" style="margin-top: 10px;">
+                  <label class="admin-label">메인 안내 문구 (일문)</label>
+                  <input type="text" id="promo-top-text-ja" class="admin-input" value="K-BEUTY GLOW 読者限定特典：Olive Young Global 会計時にコード" />
+                </div>
+                <div class="admin-form-group" style="margin-top: 10px;">
+                  <label class="admin-label">할인 혜택 문구 (일문)</label>
+                  <input type="text" id="promo-top-disc-ja" class="admin-input" value="入力でさらに10%OFF" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 카드 2: 우측 하단 / 사이드바 이벤트 쿠폰 설정 -->
+          <div class="admin-card">
+            <div class="promo-card-header">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.3rem;">🎟️</span>
+                <div>
+                  <h3 style="font-size: 1.05rem; font-weight: 700; color: #FFFFFF; margin: 0;">사이드바 & 우측 하단 이벤트 쿠폰</h3>
+                  <p style="font-size: 0.8rem; color: #94A3B8; margin: 2px 0 0 0;">메인 우측 사이드바 카드 및 전체 페이지 우측 하단 플로팅 위젯</p>
+                </div>
+              </div>
+              <label class="admin-switch" title="이벤트 쿠폰 활성화 여부">
+                <input type="checkbox" id="promo-coupon-enabled" checked />
+                <span class="admin-slider"></span>
+              </label>
+            </div>
+
+            <!-- 플로팅 쿠폰 옵션 -->
+            <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid #334155; border-radius: var(--radius-sm); padding: 12px 16px; margin-top: 16px; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 0.85rem; font-weight: 600; color: #F8FAFC;">우측 하단 플로팅 미니 쿠폰 뱃지 노출</div>
+                <div style="font-size: 0.75rem; color: #94A3B8; margin-top: 2px;">사용자 화면 우측 하단에 상시 떠 있는 빠른 쿠폰 복사 뱃지를 띄웁니다.</div>
+              </div>
+              <label class="admin-switch" title="플로팅 쿠폰 노출 여부">
+                <input type="checkbox" id="promo-floating-enabled" checked />
+                <span class="admin-slider"></span>
+              </label>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px;">
+              <div class="admin-form-group">
+                <label class="admin-label">쿠폰 뱃지 텍스트</label>
+                <input type="text" id="promo-coupon-badge" class="admin-input" placeholder="READER PRIVILEGE" value="READER PRIVILEGE" />
+              </div>
+              <div class="admin-form-group">
+                <label class="admin-label">할인율 태그</label>
+                <input type="text" id="promo-coupon-discount-tag" class="admin-input" placeholder="10% OFF" value="10% OFF" />
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 14px; margin-top: 14px;">
+              <div class="admin-form-group">
+                <label class="admin-label">쿠폰 카드 제목</label>
+                <input type="text" id="promo-coupon-title" class="admin-input" placeholder="Olive Young Global 10% OFF" value="Olive Young Global 10% OFF" />
+              </div>
+              <div class="admin-form-group">
+                <label class="admin-label">쿠폰 코드</label>
+                <input type="text" id="promo-coupon-code" class="admin-input" placeholder="GLOW10" value="GLOW10" style="font-weight: 700; color: #F472B6;" />
+              </div>
+            </div>
+
+            <div class="admin-form-group" style="margin-top: 14px;">
+              <label class="admin-label">쿠폰 상세 설명 문구</label>
+              <textarea id="promo-coupon-desc" class="admin-textarea" rows="2" placeholder="쿠폰 설명 입력...">Exclusive verified reader code valid on authentic Korean skincare & cosmetics shipped worldwide.</textarea>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 14px; margin-top: 14px;">
+              <div class="admin-form-group">
+                <label class="admin-label">쇼핑몰 명칭</label>
+                <input type="text" id="promo-coupon-mall" class="admin-input" placeholder="Olive Young Global" value="Olive Young Global" />
+              </div>
+              <div class="admin-form-group">
+                <label class="admin-label">쇼핑몰 제휴 랜딩 URL</label>
+                <input type="url" id="promo-coupon-url" class="admin-input" placeholder="https://global.oliveyoung.com" value="https://global.oliveyoung.com" />
+              </div>
+            </div>
+
+            <div class="admin-form-group" style="margin-top: 14px;">
+              <label class="admin-label">복사 완료 시 토스트 메시지</label>
+              <input type="text" id="promo-coupon-success-msg" class="admin-input" placeholder="Code &quot;GLOW10&quot; copied to clipboard! Paste at Olive Young Global checkout." value="Code &quot;GLOW10&quot; copied to clipboard! Paste at Olive Young Global checkout." />
+            </div>
+          </div>
+        </div>
+
+        <!-- 오른쪽 열: 사용자 화면 실시간 라이브 미리보기 -->
+        <div class="promotions-preview-col">
+          <div class="admin-card promo-preview-sticky">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #334155; padding-bottom: 12px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 1.1rem;">👀</span>
+                <span style="font-weight: 700; color: #F8FAFC; font-size: 0.95rem;">사용자 화면 실시간 미리보기</span>
+              </div>
+              <span class="preview-live-badge">LIVE SYNC</span>
+            </div>
+
+            <!-- 미리보기 1: 상단 배너 -->
+            <div style="margin-bottom: 24px;">
+              <div style="font-size: 0.75rem; font-weight: 600; color: #94A3B8; margin-bottom: 8px;">① 상단 프로모션 배너 (Top Bar)</div>
+              <div class="promo-live-top-banner theme-dark" id="preview-top-banner">
+                <div class="promo-content">
+                  <span class="promo-badge" id="preview-top-badge">READER PRIVILEGE</span>
+                  <span id="preview-top-text">K-BEUTY GLOW READERS: Use promo code</span>
+                  <button class="promo-code-btn" type="button" style="pointer-events: none;">
+                    <span id="preview-top-code">GLOW10</span>
+                    <span style="font-size: 0.75rem;">📋</span>
+                  </button>
+                  <span id="preview-top-discount">for an exclusive 10% OFF at Olive Young Global</span>
+                </div>
+              </div>
+              <div id="preview-top-disabled-msg" style="display: none; padding: 14px; text-align: center; background: rgba(239, 68, 68, 0.1); border: 1px dashed rgba(239, 68, 68, 0.3); border-radius: var(--radius-sm); color: #FCA5A5; font-size: 0.8rem;">
+                🚫 상단 배너가 현재 비활성화(숨김) 상태입니다.
+              </div>
+            </div>
+
+            <!-- 미리보기 2: 사이드바 쿠폰 카드 -->
+            <div style="margin-bottom: 24px;">
+              <div style="font-size: 0.75rem; font-weight: 600; color: #94A3B8; margin-bottom: 8px;">② 메인 우측 사이드바 쿠폰 카드 (Sidebar Card)</div>
+              <div class="sidebar-widget-card sidebar-promo-widget" id="preview-sidebar-widget" style="margin: 0; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+                <div class="sidebar-promo-badge" id="preview-sidebar-badge">READER PRIVILEGE</div>
+                <h4 id="preview-sidebar-title" style="font-family: var(--font-serif); font-size: 1.08rem; margin: 10px 0 6px 0; color: var(--color-text-main);">Olive Young Global 10% OFF</h4>
+                <p id="preview-sidebar-desc" style="font-size: 0.82rem; color: var(--color-text-secondary); line-height: 1.5; margin-bottom: 12px;">Exclusive verified reader code valid on authentic Korean skincare & cosmetics shipped worldwide.</p>
+                <div class="sidebar-code-box">
+                  <code id="preview-sidebar-code">GLOW10</code>
+                  <button class="btn-sidebar-copy" type="button" style="pointer-events: none;">Copy</button>
+                </div>
+                <a href="#" id="preview-sidebar-link" class="sidebar-promo-shop-link" style="pointer-events: none;">
+                  <span id="preview-sidebar-mall">Olive Young Global</span> <span>↗</span>
+                </a>
+              </div>
+              <div id="preview-sidebar-disabled-msg" style="display: none; padding: 14px; text-align: center; background: rgba(239, 68, 68, 0.1); border: 1px dashed rgba(239, 68, 68, 0.3); border-radius: var(--radius-sm); color: #FCA5A5; font-size: 0.8rem;">
+                🚫 사이드바 쿠폰 카드가 현재 비활성화(숨김) 상태입니다.
+              </div>
+            </div>
+
+            <!-- 미리보기 3: 우측 하단 플로팅 미니 쿠폰 뱃지 -->
+            <div>
+              <div style="font-size: 0.75rem; font-weight: 600; color: #94A3B8; margin-bottom: 8px;">③ 우측 하단 플로팅 쿠폰 버튼 (Floating Widget)</div>
+              <div class="floating-coupon-pill-preview" id="preview-floating-pill">
+                <div class="floating-coupon-inner">
+                  <span class="floating-coupon-icon">🎁</span>
+                  <div class="floating-coupon-info">
+                    <span class="floating-coupon-tag" id="preview-floating-tag">10% OFF</span>
+                    <strong class="floating-coupon-code" id="preview-floating-code">GLOW10</strong>
+                  </div>
+                  <button class="floating-coupon-btn" type="button" style="pointer-events: none;">Copy 📋</button>
+                </div>
+              </div>
+              <div id="preview-floating-disabled-msg" style="display: none; padding: 14px; text-align: center; background: rgba(239, 68, 68, 0.1); border: 1px dashed rgba(239, 68, 68, 0.3); border-radius: var(--radius-sm); color: #FCA5A5; font-size: 0.8rem;">
+                🚫 우측 하단 플로팅 쿠폰 버튼이 비활성화 상태입니다.
+              </div>
+            </div>
+
+            <!-- 빠른 사이트 열기 -->
+            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #334155;">
+              <a href="/" target="_blank" class="btn-action-icon" style="width: 100%; justify-content: center; text-decoration: none; padding: 10px; font-weight: 600; color: #38BDF8; border-color: rgba(56, 189, 248, 0.3);">
+                <span>🌐 실제 블로그 사이트에서 확인하기 ↗</span>
+              </a>
+            </div>
+
+          </div>
+        </div>
+
       </div>
     </div>
 
