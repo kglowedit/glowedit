@@ -1,5 +1,5 @@
 /**
- * Standalone Article Page Script for K-beuty Glow Edit
+ * Standalone Article Page Script for The K-Glow Edit
  * Handles URL slug resolution, rich markdown rendering, contextual affiliate formulas, and comments
  */
 
@@ -94,10 +94,10 @@ function loadAndRenderArticle() {
   const excerpt = currentArticle.excerpt[lang] || currentArticle.excerpt.en;
   const content = currentArticle.content[lang] || currentArticle.content.en;
 
-  document.title = `${title} | K-beuty Glow Edit`;
+  document.title = `${title} | The K-Glow Edit`;
 
   updateHeadMetadata({
-    title: `${title} | K-beuty Glow Edit`,
+    title: `${title} | The K-Glow Edit`,
     description: excerpt,
     image: currentArticle.coverImage,
     type: "article",

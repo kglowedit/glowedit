@@ -1,5 +1,5 @@
 /**
- * Multilingual Translations for K-beuty Glow Edit
+ * Multilingual Translations for The K-Glow Edit
  * Pure K-Beauty Editorial Blog & Community Discussions
  * Supported languages: en (English), zh (简体中文), ja (日本語)
  */
@@ -7,7 +7,7 @@
 export const translations = {
   en: {
     // Header & Brand
-    brandName: "K-beuty Glow Edit",
+    brandName: "The K-Glow Edit",
     brandTagline: "The Curated K-Beauty Journal & Skincare Intelligence",
     navStories: "All Articles",
     navCommunity: "Community Forum",
@@ -17,7 +17,7 @@ export const translations = {
     searchPlaceholder: "Search skincare routines, ingredients, guides...",
     
     // Promo / Reader Benefit bar
-    promoBarText: "K-BEUTY GLOW READERS: Use promo code",
+    promoBarText: "THE K-GLOW READERS: Use promo code",
     promoBarDiscount: "for an exclusive 10% OFF at Olive Young Global",
     copyCode: "Copy Code",
     codeCopied: "Promo Code GLOW10 Copied!",
@@ -128,7 +128,7 @@ export const translations = {
     shareArticle: "Share Guide",
     linkCopied: "Link copied to clipboard!",
     affiliateDisclosureTitle: "Editorial & Affiliate Transparency Disclosure",
-    affiliateDisclosureText: "K-beuty Glow Edit is an independent beauty publication. Our guides are grounded in dermatological science and hands-on testing. When you purchase through our Olive Young Global partner links, we may earn an affiliate commission at no added cost to you.",
+    affiliateDisclosureText: "The K-Glow Edit is an independent beauty publication. Our guides are grounded in dermatological science and hands-on testing. When you purchase through our Olive Young Global partner links, we may earn an affiliate commission at no added cost to you.",
     relatedProductsInArticle: "Editor's Tested Recommendations in this Story",
     viewOnOliveYoung: "View on Olive Young Global (10% Code: GLOW10)",
     testedFormula: "Tested Korean Formulation",
@@ -142,13 +142,13 @@ export const translations = {
     seoStructuredData: "Active JSON-LD Schema",
 
     // Footer
-    footerAbout: "K-beuty Glow Edit is an independent digital publication curating the best of Korean skincare science, clinical ingredients, and Olive Young Global shopping recommendations.",
+    footerAbout: "The K-Glow Edit is an independent digital publication curating the best of Korean skincare science, clinical ingredients, and Olive Young Global shopping recommendations.",
     footerFastLinks: "Quick Navigation",
     footerLegal: "Compliance & Legal",
     privacyPolicy: "Privacy Policy",
     termsOfUse: "Terms of Service",
     affiliateDisclosureFooter: "Olive Young Affiliate Disclosure",
-    allRightsReserved: "All rights reserved. K-beuty Glow Edit is an independent editorial publication. Olive Young is a trademark of CJ Olive Young Corp.",
+    allRightsReserved: "All rights reserved. The K-Glow Edit is an independent editorial publication. Olive Young is a trademark of CJ Olive Young Corp.",
 
     // Sidebar Community Widget
     sidebarCommTitle: "Community Discussions",
@@ -158,7 +158,7 @@ export const translations = {
 
   zh: {
     // Header & Brand
-    brandName: "K-beuty Glow Edit 韶光首尔",
+    brandName: "The K-Glow Edit 韶光首尔",
     brandTagline: "韩系皮肤科学与水光肌护肤专栏",
     navStories: "精选文章",
     navCommunity: "护肤讨论区",
@@ -168,7 +168,7 @@ export const translations = {
     searchPlaceholder: "搜索护肤公式、成分解析、护肤文章...",
 
     // Promo bar
-    promoBarText: "K-BEUTY GLOW 读者专属海淘礼遇：结账输入优惠码",
+    promoBarText: "THE K-GLOW 读者专属海淘礼遇：结账输入优惠码",
     promoBarDiscount: "在 Olive Young Global 享全场额外 10% 折扣",
     copyCode: "复制优惠码",
     codeCopied: "优惠码 GLOW10 复制成功！",
@@ -279,7 +279,7 @@ export const translations = {
     shareArticle: "分享文章",
     linkCopied: "文章链接已复制到剪贴板！",
     affiliateDisclosureTitle: "编辑独立性与联盟透明度声明",
-    affiliateDisclosureText: "K-beuty Glow Edit 是一家致力于真实分享的独立皮肤科学专栏。我们的测评基于临床配方分析与编辑实测。若您通过文中的 Olive Young Global 伙伴链接购买，我们可能会获得微薄佣金用以维持实验室测试与深度采写。",
+    affiliateDisclosureText: "The K-Glow Edit 是一家致力于真实分享的独立皮肤科学专栏。我们的测评基于临床配方分析与编辑实测。若您通过文中的 Olive Young Global 伙伴链接购买，我们可能会获得微薄佣金用以维持实验室测试与深度采写。",
     relatedProductsInArticle: "本篇深度文章涉及的编辑实测单品",
     viewOnOliveYoung: "前往 Olive Young Global 查阅配方 (优惠码: GLOW10)",
     testedFormula: "编辑实测推荐单品",
@@ -293,13 +293,13 @@ export const translations = {
     seoStructuredData: "动态 JSON-LD 结构化数据",
 
     // Footer
-    footerAbout: "K-beuty Glow Edit 是一家专注于韩系护肤科学、成分深度剖析及 Olive Young 选品建议的独立数字媒体。",
+    footerAbout: "The K-Glow Edit 是一家专注于韩系护肤科学、成分深度剖析及 Olive Young 选品建议的独立数字媒体。",
     footerFastLinks: "快速导航",
     footerLegal: "合规与条款",
     privacyPolicy: "隐私政策",
     termsOfUse: "服务条款",
     affiliateDisclosureFooter: "联盟营销声明",
-    allRightsReserved: "版权所有。K-beuty Glow Edit 为独立内容创作者，所有品牌商标版权归其合法拥有者所有。",
+    allRightsReserved: "版权所有。The K-Glow Edit 为独立内容创作者，所有品牌商标版权归其合法拥有者所有。",
 
     // Sidebar Community Widget
     sidebarCommTitle: "社区最新动态",
@@ -309,7 +309,7 @@ export const translations = {
 
   ja: {
     // Header & Brand
-    brandName: "K-beuty Glow Edit ソウルグロウ",
+    brandName: "The K-Glow Edit ソウルグロウ",
     brandTagline: "韓国スキンケア科学＆水光肌エディトリアルマガジン",
     navStories: "最新記事一覧",
     navCommunity: "コミュニティ・Q&A",
@@ -319,7 +319,7 @@ export const translations = {
     searchPlaceholder: "スキンケアルーティン、成分、レビューを検索...",
 
     // Promo bar
-    promoBarText: "K-BEUTY GLOW 読者限定特典：Olive Young Global 会計時にコード",
+    promoBarText: "THE K-GLOW 読者限定特典：Olive Young Global 会計時にコード",
     promoBarDiscount: "入力でさらに10%OFF",
     copyCode: "コードをコピー",
     codeCopied: "クーポンコード GLOW10 をコピーしました！",
@@ -430,7 +430,7 @@ export const translations = {
     shareArticle: "記事をシェア",
     linkCopied: "記事のリンクをコピーしました！",
     affiliateDisclosureTitle: "編集方針およびアフィリエイト開示について",
-    affiliateDisclosureText: "K-beuty Glow Edit は独立したビューティージャーナルです。記事内のオリーブヤンググローバル公式リンクからご購入いただいた場合、当メディアに手数料が発生することがありますが、お客様に追加の費用負担は一切発生しません。",
+    affiliateDisclosureText: "The K-Glow Edit は独立したビューティージャーナルです。記事内のオリーブヤンググローバル公式リンクからご購入いただいた場合、当メディアに手数料が発生することがありますが、お客様に追加の費用負担は一切発生しません。",
     relatedProductsInArticle: "この記事で紹介したエディター愛用コスメ",
     viewOnOliveYoung: "Olive Young Global 公式通販で詳細を見る (コード: GLOW10)",
     testedFormula: "エディター検証済みコスメ",
@@ -444,13 +444,13 @@ export const translations = {
     seoStructuredData: "適用中 JSON-LD 構造化データ",
 
     // Footer
-    footerAbout: "K-beuty Glow Edit は、世界中のK-Beautyファンのために最新の韓国スキンケア情報、成分トレンド、オリーブヤング公式通販の購入ガイドをお届けする独立系メディアです。",
+    footerAbout: "The K-Glow Edit は、世界中のK-Beautyファンのために最新の韓国スキンケア情報、成分トレンド、オリーブヤング公式通販の購入ガイドをお届けする独立系メディアです。",
     footerFastLinks: "クイックリンク",
     footerLegal: "規約・ガイドライン",
     privacyPolicy: "プライバシーポリシー",
     termsOfUse: "利用規約",
     affiliateDisclosureFooter: "アフィリエイト開示方針",
-    allRightsReserved: "無断転載を禁じます。K-beuty Glow Edit は独立系メディアであり、すべての商標は各権利者に帰属します。",
+    allRightsReserved: "無断転載を禁じます。The K-Glow Edit は独立系メディアであり、すべての商標は各権利者に帰属します。",
 
     // Sidebar Community Widget
     sidebarCommTitle: "最新コミュニティ投稿",

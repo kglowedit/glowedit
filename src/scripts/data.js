@@ -805,7 +805,7 @@ export const INITIAL_COMMUNITY_POSTS = [
     status: "published",
     password: "admin",
     tags: ["#CommunityRules", "#CleanBeauty", "#Notice"],
-    content: "Welcome to K-beuty Glow Edit Global Community!\n\n1. Be respectful to fellow skincare enthusiasts worldwide.\n2. When asking routine advice, please share your skin type, climate, and current products.\n3. Honest holy grail reviews and Olive Young hauls are always celebrated!\n4. No hate speech, spam affiliate links, or harassment. Let's keep this space radiant and helpful.",
+    content: "Welcome to The K-Glow Edit Global Community!\n\n1. Be respectful to fellow skincare enthusiasts worldwide.\n2. When asking routine advice, please share your skin type, climate, and current products.\n3. Honest holy grail reviews and Olive Young hauls are always celebrated!\n4. No hate speech, spam affiliate links, or harassment. Let's keep this space radiant and helpful.",
     replies: [
       {
         id: "reply-n1",
@@ -1313,10 +1313,10 @@ export const DEFAULT_PROMO_SETTINGS = {
   topBanner: {
     enabled: true,
     badge: "READER PRIVILEGE",
-    textEn: "K-BEUTY GLOW READERS: Use promo code",
-    textZh: "K-BEUTY GLOW 读者专属海淘礼遇：结账输入优惠码",
-    textJa: "K-BEUTY GLOW 読者限定特典：Olive Young Global 会計時にコード",
-    textKo: "K-BEUTY GLOW 독자 전용 혜택: 결제 시 프로모션 코드",
+    textEn: "THE K-GLOW READERS: Use promo code",
+    textZh: "THE K-GLOW 读者专属海淘礼遇：结账输入优惠码",
+    textJa: "THE K-GLOW 読者限定特典：Olive Young Global 会計時にコード",
+    textKo: "THE K-GLOW 독자 전용 혜택: 결제 시 프로모션 코드",
     promoCode: "GLOW10",
     discountEn: "for an exclusive 10% OFF at Olive Young Global",
     discountZh: "在 Olive Young Global 享全场额外 10% 折扣",

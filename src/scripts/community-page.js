@@ -1,5 +1,5 @@
 /**
- * Community Page Script for K-beuty Glow Edit
+ * Community Page Script for The K-Glow Edit
  * Standalone Community Bulletin Board (/community.html)
  */
 

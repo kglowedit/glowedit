@@ -1,5 +1,5 @@
 /**
- * Admin Application Logic for K-beuty Glow Edit (한국어 관리자 스튜디오)
+ * Admin Application Logic for The K-Glow Edit (한국어 관리자 스튜디오)
  * 핵심 블로그 기능:
  * 1. 새 글 작성 (한국어 원문 입력 -> AI 영문·중문·일문 자동 번역 -> 실시간 독자 화면 미리보기)
  * 2. 카테고리 관리
@@ -1963,7 +1963,7 @@ function updatePromotionsLivePreview() {
   const topCode = getVal('promo-top-code') || 'GLOW10';
   
   // Pick active text according to activePromoLang
-  let topText = getVal(`promo-top-text-${activePromoLang}`) || getVal('promo-top-text-en') || 'K-BEUTY GLOW READERS: Use promo code';
+  let topText = getVal(`promo-top-text-${activePromoLang}`) || getVal('promo-top-text-en') || 'THE K-GLOW READERS: Use promo code';
   let topDiscount = getVal(`promo-top-disc-${activePromoLang}`) || getVal('promo-top-disc-en') || 'for an exclusive 10% OFF at Olive Young Global';
 
   // Preview 1: Top Banner

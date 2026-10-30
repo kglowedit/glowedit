@@ -1,5 +1,5 @@
 /**
- * User Application Logic for K-beuty Glow Edit
+ * User Application Logic for The K-Glow Edit
  * Pure K-Beauty Editorial Blog & Community Intelligence Concept
  */
 
@@ -115,7 +115,7 @@ function setupNewsletterForm() {
     const email = document.getElementById('newsletter-email').value;
     if (email) {
       showToast({
-        title: "Welcome to K-beuty Glow Edit",
+        title: "Welcome to The K-Glow Edit",
         message: "Your exclusive 10% Olive Young promo code GLOW10 has been dispatched to your inbox."
       });
       form.reset();

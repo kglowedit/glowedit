@@ -1,5 +1,5 @@
 /**
- * AI & Multilingual Translation Engine for K-beuty Glow Edit
+ * AI & Multilingual Translation Engine for The K-Glow Edit
  * Powered by Google Gemini (Google AI Studio Free Tier) with dynamic ModelService discovery,
  * semantic version sorting, automatic recommendation recovery, and fallback translator.
  */
@@ -213,7 +213,7 @@ export async function translateWithGemini({ titleKo, excerptKo, contentKo, apiKe
   }
 
   const prompt = `
-You are an expert bilingual/multilingual K-Beauty skincare editor and translator for the global digital publication "K-beuty Glow Edit".
+You are an expert bilingual/multilingual K-Beauty skincare editor and translator for the global digital publication "The K-Glow Edit".
 Translate the following Korean article into:
 1) English (en)
 2) Chinese Simplified (zh)

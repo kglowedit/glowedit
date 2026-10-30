@@ -1,5 +1,5 @@
 {
-  "name": "seoul-glow-kbeauty",
+  "name": "the-k-glow-edit",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -7,8 +7,8 @@
     "dev": "vite --port 3000 --host",
     "build": "vite build",
     "preview": "vite preview --port 3000 --host",
-    "deploy": "vite build && wrangler pages deploy dist --project-name=kbeuty-glow-edit",
-    "pages:deploy": "vite build && wrangler pages deploy dist --project-name=kbeuty-glow-edit"
+    "deploy": "vite build && wrangler pages deploy dist --project-name=kglowedit",
+    "pages:deploy": "vite build && wrangler pages deploy dist --project-name=kglowedit"
   },
   "devDependencies": {
     "vite": "^6.2.0",
