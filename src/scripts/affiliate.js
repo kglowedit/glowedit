@@ -125,13 +125,18 @@ export function applyPromoSettingsToDOM() {
   const settings = getPromoSettings();
   const currentLang = getLang();
 
+  const isTopEnabled = Boolean(settings?.topBanner?.enabled);
+  const isCouponEnabled = Boolean(settings?.eventCoupon?.enabled);
+
   // 1. Top Banner
   const topBar = document.getElementById('top-promo-bar') || document.querySelector('.top-promo-bar');
   if (topBar) {
-    if (!settings.topBanner.enabled) {
-      topBar.style.display = 'none';
+    if (!isTopEnabled) {
+      topBar.style.setProperty('display', 'none', 'important');
+      topBar.setAttribute('hidden', '');
     } else {
-      topBar.style.display = 'flex';
+      topBar.removeAttribute('hidden');
+      topBar.style.setProperty('display', 'flex', 'important');
 
       // Update background theme
       topBar.classList.remove('theme-dark', 'theme-rose', 'theme-gold', 'theme-emerald');
@@ -175,10 +180,12 @@ export function applyPromoSettingsToDOM() {
   // 2. Sidebar Promo Widget (Right Sidebar Coupon on Main Page)
   const sidebarWidget = document.getElementById('sidebar-promo-widget') || document.querySelector('.sidebar-promo-widget');
   if (sidebarWidget) {
-    if (!settings.eventCoupon.enabled) {
-      sidebarWidget.style.display = 'none';
+    if (!isCouponEnabled) {
+      sidebarWidget.style.setProperty('display', 'none', 'important');
+      sidebarWidget.setAttribute('hidden', '');
     } else {
-      sidebarWidget.style.display = 'block';
+      sidebarWidget.removeAttribute('hidden');
+      sidebarWidget.style.setProperty('display', 'block', 'important');
 
       const badgeEl = sidebarWidget.querySelector('.sidebar-promo-badge');
       if (badgeEl && settings.eventCoupon.badge) {
@@ -228,8 +235,11 @@ export function applyPromoSettingsToDOM() {
 export function renderFloatingCouponWidget(settings = null) {
   if (!settings) settings = getPromoSettings();
 
+  const isCouponEnabled = Boolean(settings?.eventCoupon?.enabled);
+  const isFloatingEnabled = Boolean(settings?.eventCoupon?.floatingEnabled);
+
   const existing = document.getElementById('floating-coupon-pill');
-  if (!settings.eventCoupon.enabled || !settings.eventCoupon.floatingEnabled) {
+  if (!isCouponEnabled || !isFloatingEnabled) {
     if (existing) existing.remove();
     return;
   }
@@ -287,5 +297,14 @@ export function initPromoCodeButtons() {
   sidebarBtn?.addEventListener('click', () => {
     const settings = getPromoSettings();
     copyPromoCode(sidebarBtn, settings.eventCoupon.promoCode);
+  });
+}
+
+// Real-time synchronization across open tabs when promo settings change
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'kbeauty_promo_settings') {
+      applyPromoSettingsToDOM();
+    }
   });
 }

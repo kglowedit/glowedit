@@ -1844,7 +1844,7 @@ function setupPromotionsModule() {
   const saveBtn = document.getElementById('btn-save-promotions');
   const resetBtn = document.getElementById('btn-reset-promotions');
 
-  saveBtn?.addEventListener('click', handleSavePromotions);
+  saveBtn?.addEventListener('click', () => handleSavePromotions(true));
   resetBtn?.addEventListener('click', handleResetPromotions);
 
   // Theme selector buttons
@@ -1855,6 +1855,7 @@ function setupPromotionsModule() {
       btn.classList.add('active');
       currentPromoTheme = btn.dataset.theme || 'dark';
       updatePromotionsLivePreview();
+      handleSavePromotions(false); // Auto-save theme selection
     });
   });
 
@@ -1874,7 +1875,7 @@ function setupPromotionsModule() {
     });
   });
 
-  // Real-time input listeners for Live Sync Preview
+  // Real-time input listeners for Live Sync Preview & Instant Auto-Save for toggles
   const inputIds = [
     'promo-top-enabled', 'promo-top-badge', 'promo-top-code', 'promo-top-link',
     'promo-top-text-en', 'promo-top-disc-en',
@@ -1891,8 +1892,14 @@ function setupPromotionsModule() {
   inputIds.forEach(id => {
     const el = document.getElementById(id);
     if (el) {
-      el.addEventListener('input', updatePromotionsLivePreview);
-      el.addEventListener('change', updatePromotionsLivePreview);
+      el.addEventListener('input', () => {
+        updatePromotionsLivePreview();
+      });
+      el.addEventListener('change', () => {
+        updatePromotionsLivePreview();
+        // Automatically save immediately when any switch or field changes!
+        handleSavePromotions(false);
+      });
     }
   });
 
@@ -2051,7 +2058,7 @@ function updatePromotionsLivePreview() {
   }
 }
 
-function handleSavePromotions() {
+function handleSavePromotions(showNotification = true) {
   const getVal = (id) => (document.getElementById(id)?.value || '').trim();
   const getChecked = (id) => Boolean(document.getElementById(id)?.checked);
 
@@ -2088,10 +2095,13 @@ function handleSavePromotions() {
   savePromoSettings(updatedSettings);
   updateTopCounters();
   updatePromotionsLivePreview();
-  showToast({
-    title: "설정 저장 완료",
-    message: "상단 배너 및 이벤트 쿠폰 설정이 성공적으로 저장되었습니다."
-  });
+
+  if (showNotification) {
+    showToast({
+      title: "설정 저장 완료",
+      message: "상단 배너 및 이벤트 쿠폰 설정이 성공적으로 저장되었습니다."
+    });
+  }
 }
 
 function handleResetPromotions() {
