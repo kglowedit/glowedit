@@ -128,14 +128,22 @@ export function applyPromoSettingsToDOM() {
   const isTopEnabled = Boolean(settings?.topBanner?.enabled);
   const isCouponEnabled = Boolean(settings?.eventCoupon?.enabled);
 
+  // Sync Root document classes immediately
+  if (typeof document !== 'undefined') {
+    document.documentElement.classList.toggle('hide-top-promo', !isTopEnabled);
+    document.documentElement.classList.toggle('hide-sidebar-promo', !isCouponEnabled);
+  }
+
   // 1. Top Banner
   const topBar = document.getElementById('top-promo-bar') || document.querySelector('.top-promo-bar');
   if (topBar) {
     if (!isTopEnabled) {
       topBar.style.setProperty('display', 'none', 'important');
       topBar.setAttribute('hidden', '');
+      topBar.classList.add('is-hidden');
     } else {
       topBar.removeAttribute('hidden');
+      topBar.classList.remove('is-hidden');
       topBar.style.setProperty('display', 'flex', 'important');
 
       // Update background theme
@@ -183,8 +191,10 @@ export function applyPromoSettingsToDOM() {
     if (!isCouponEnabled) {
       sidebarWidget.style.setProperty('display', 'none', 'important');
       sidebarWidget.setAttribute('hidden', '');
+      sidebarWidget.classList.add('is-hidden');
     } else {
       sidebarWidget.removeAttribute('hidden');
+      sidebarWidget.classList.remove('is-hidden');
       sidebarWidget.style.setProperty('display', 'block', 'important');
 
       const badgeEl = sidebarWidget.querySelector('.sidebar-promo-badge');

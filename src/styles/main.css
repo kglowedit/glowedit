@@ -1,4 +1,19 @@
-/* Main Stylesheet for Seoul Glow Edit (User Facing) */
+/* Main Stylesheet for The K-Glow Edit (User Facing) */
+
+/* Immediate Hide Classes Controlled by Storage & Admin */
+html.hide-top-promo .top-promo-bar,
+.top-promo-bar[hidden],
+.top-promo-bar.is-hidden {
+  display: none !important;
+}
+
+html.hide-sidebar-promo .sidebar-promo-widget,
+.sidebar-promo-widget[hidden],
+.sidebar-promo-widget.is-hidden,
+html.hide-sidebar-promo #floating-coupon-pill,
+#floating-coupon-pill[hidden] {
+  display: none !important;
+}
 
 /* Promo Ticker Bar */
 .top-promo-bar {

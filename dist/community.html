@@ -20,10 +20,28 @@
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>" />
-  <script type="module" crossorigin src="/assets/community-C583T91e.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/affiliate-C-7dw0hq.js">
+
+  <!-- Instant Promotion Visibility Guard -->
+  <script>
+    (function() {
+      try {
+        var s = localStorage.getItem('kbeauty_promo_settings');
+        if (s) {
+          var p = JSON.parse(s);
+          if (p.topBanner && p.topBanner.enabled === false) {
+            document.documentElement.classList.add('hide-top-promo');
+          }
+          if (p.eventCoupon && p.eventCoupon.enabled === false) {
+            document.documentElement.classList.add('hide-sidebar-promo');
+          }
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <script type="module" crossorigin src="/assets/community-CLL-e5tg.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/affiliate-DTiuOQeh.js">
   <link rel="stylesheet" crossorigin href="/assets/affiliate-DR0w79gj.css">
-  <link rel="stylesheet" crossorigin href="/assets/main-BC-xdxGv.css">
+  <link rel="stylesheet" crossorigin href="/assets/main-CDQOZy6r.css">
 </head>
 <body>
 

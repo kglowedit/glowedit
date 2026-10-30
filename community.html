@@ -20,6 +20,24 @@
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>" />
+
+  <!-- Instant Promotion Visibility Guard -->
+  <script>
+    (function() {
+      try {
+        var s = localStorage.getItem('kbeauty_promo_settings');
+        if (s) {
+          var p = JSON.parse(s);
+          if (p.topBanner && p.topBanner.enabled === false) {
+            document.documentElement.classList.add('hide-top-promo');
+          }
+          if (p.eventCoupon && p.eventCoupon.enabled === false) {
+            document.documentElement.classList.add('hide-sidebar-promo');
+          }
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
 
